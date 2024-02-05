@@ -39,4 +39,4 @@ Ref: https://keepachangelog.com/en/1.0.0/
 
 ### Features
 
-- [#73](https://github.com/zama-ai/fhevm-go/pull/73): Switch to use local decrypt/reencrypt call to `tfhe-rs` instead of doing a gRPC call to a KMS. This means that the `KMS_ENDPOINT_ADDR` environment variable is now ignored.
+- [#1](https://github.com/inco-fhevm/fhevm-go/pull/1): Switch to use local decrypt/reencrypt call to `tfhe-rs` instead of doing a gRPC call to a KMS. This means that the `KMS_ENDPOINT_ADDR` environment variable is now ignored.
