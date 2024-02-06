@@ -1702,7 +1702,7 @@ func InitGlobalKeysFromFiles(keysDir string) error {
 	pksHash = crypto.Keccak256Hash(pksBytes)
 	pks = C.deserialize_compact_public_key(toDynamicBufferView(pksBytes))
 
-	cks = C.deserialize_client_key(toBufferView(cksBytes))
+	cks = C.deserialize_client_key(toDynamicBufferView(cksBytes))
 
 	initCiphertextSizes()
 
