@@ -1609,11 +1609,18 @@ func InitGlobalKeysFromFiles(keysDir string) error {
 	if err != nil {
 		return err
 	}
+	var cksPath = path.Join(keysDir, "cks")
+	cksBytes, err := os.ReadFile(cksPath)
+	if err != nil {
+		return err
+	}
 
 	sks = C.deserialize_server_key(toBufferView(sksBytes))
 
 	pksHash = crypto.Keccak256Hash(pksBytes)
 	pks = C.deserialize_compact_public_key(toBufferView(pksBytes))
+
+	cks = C.deserialize_client_key(toBufferView(cksBytes))
 
 	initCiphertextSizes()
 
