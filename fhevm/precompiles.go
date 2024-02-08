@@ -9,10 +9,12 @@ import (
 	"fmt"
 	"math/big"
 	"math/bits"
+	"os"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/holiman/uint256"
+	"github.com/naoina/toml"
 	fhevm_crypto "github.com/zama-ai/fhevm-go/crypto"
 	"golang.org/x/crypto/chacha20"
 	"golang.org/x/crypto/nacl/box"
@@ -56,6 +58,37 @@ var signatureFheIfThenElse = makeKeccakSignature("fheIfThenElse(uint256,uint256,
 var signatureVerifyCiphertext = makeKeccakSignature("verifyCiphertext(bytes)")
 var signatureReencrypt = makeKeccakSignature("reencrypt(uint256,uint256)")
 var signatureOptimisticRequire = makeKeccakSignature("optimisticRequire(uint256)")
+
+type tomlConfigOptions struct {
+	Fhevm struct {
+		MockOpsFlag bool
+	}
+}
+
+var tomlConfig tomlConfigOptions
+
+func homeDir() string {
+	home, err := os.UserHomeDir()
+	if err != nil {
+		panic(err)
+	}
+	return home
+}
+
+func init() {
+	home := homeDir()
+
+	f, err := os.Open(home + "/.inco/config/node_config.toml")
+	if err != nil {
+		fmt.Println("failed to open node_config.toml file")
+		return
+	}
+	defer f.Close()
+	if err := toml.NewDecoder(f).Decode(&tomlConfig); err != nil {
+		fmt.Println("failed to parse node_config.toml file: " + err.Error())
+		return
+	}
+}
 
 func FheLibRequiredGas(environment EVMEnvironment, input []byte) uint64 {
 	logger := environment.GetLogger()
@@ -2022,6 +2055,19 @@ func verifyCiphertextRun(environment EVMEnvironment, caller common.Address, addr
 			"ctBytes64", hex.EncodeToString(ctBytes[:minInt(len(ctBytes), 64)]))
 		return nil, err
 	}
+
+	if tomlConfig.Fhevm.MockOpsFlag {
+		logger.Info("[Caution!!] MockOpsFlag is enabled, decrypting ciphertext. Please make sure you're not using it in production.")
+		plaintext, err := decryptValue(environment, ct)
+		if err != nil {
+			logger.Error("verifyCiphertext failed to decrypt input ciphertext")
+			return nil, err
+		}
+		ct = new(tfheCiphertext)
+		pt := big.NewInt(int64(plaintext))
+		ct = ct.trivialEncrypt(*pt, ctType)
+	}
+
 	ctHash := ct.getHash()
 	importCiphertext(environment, ct)
 	if environment.IsCommitting() {
