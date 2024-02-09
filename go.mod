@@ -5,10 +5,12 @@ go 1.20
 require (
 	github.com/ethereum/go-ethereum v1.12.0
 	github.com/holiman/uint256 v1.2.2-0.20230321075855-87b91420868c
+	github.com/naoina/toml v0.1.2-0.20170918210437-9fafd6967416
 	golang.org/x/crypto v0.16.0
 )
 
 require (
+	github.com/naoina/go-stringutil v0.1.0 // indirect
 	golang.org/x/net v0.14.0 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20230822172742-b8732ec3820d // indirect
 )
