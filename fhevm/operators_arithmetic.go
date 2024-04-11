@@ -3,10 +3,62 @@ package fhevm
 import (
 	"encoding/hex"
 	"errors"
+	"math/big"
 
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/zama-ai/fhevm-go/sgx"
 	"go.opentelemetry.io/otel/trace"
 )
+
+func sgxAddRun(environment EVMEnvironment, caller common.Address, addr common.Address, input []byte, readOnly bool, runSpan trace.Span) ([]byte, error) {
+	input = input[:minInt(65, len(input))]
+
+	logger := environment.GetLogger()
+
+	lhs, rhs, err := get2VerifiedOperands(environment, input)
+	otelDescribeOperands(runSpan, encryptedOperand(*lhs), encryptedOperand(*rhs))
+	if err != nil {
+		logger.Error("fheAdd inputs not verified", "err", err, "input", hex.EncodeToString(input))
+		return nil, err
+	}
+	if lhs.fheUintType() != rhs.fheUintType() {
+		msg := "sgxAdd operand type mismatch"
+		logger.Error(msg, "lhs", lhs.fheUintType(), "rhs", rhs.fheUintType())
+		return nil, errors.New(msg)
+	}
+
+	// If we are doing gas estimation, skip execution and insert a random ciphertext as a result.
+	if !environment.IsCommitting() && !environment.IsEthCall() {
+		return importRandomCiphertext(environment, lhs.fheUintType()), nil
+	}
+
+	lb, err := sgx.FromTfheCiphertext(*lhs.ciphertext)
+	rb, err := sgx.FromTfheCiphertext(*rhs.ciphertext)
+
+	l := big.NewInt(0).SetBytes(lb.Plaintext).Uint64()
+	r := big.NewInt(0).SetBytes(rb.Plaintext).Uint64()
+
+	result_plaintext := l + r
+
+	result_plaintext_byte := make([]byte, 32)
+	result_byte := big.NewInt(0)
+	result_byte.SetUint64(result_plaintext)
+	result_byte.FillBytes(result_plaintext_byte)
+
+	sgxPlaintext := sgx.NewSgxPlaintext(result_plaintext_byte, lhs.fheUintType(), caller)
+
+	result, err := sgx.ToTfheCiphertext(sgxPlaintext)
+
+	if err != nil {
+		logger.Error("sgxAdd failed", "err", err)
+		return nil, err
+	}
+	importCiphertext(environment, &result)
+
+	resultHash := result.GetHash()
+	logger.Info("sgxAdd success", "lhs", lhs.hash().Hex(), "rhs", rhs.hash().Hex(), "result", resultHash.Hex())
+	return resultHash[:], nil
+}
 
 func fheAddRun(environment EVMEnvironment, caller common.Address, addr common.Address, input []byte, readOnly bool, runSpan trace.Span) ([]byte, error) {
 	input = input[:minInt(65, len(input))]
