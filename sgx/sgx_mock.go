@@ -16,7 +16,7 @@ var key *ecies.PrivateKey
 func init() {
 	// For now, we hardcode the private key that will be used in the SGX.
 	// We will change this to use a secure enclave key generation mechanism.
-	hexKey := "0x...."
+	hexKey := "4a3f9d7b12e8acef2f8a561e3c3b9f9dd3e8a3b1f4de4e8d243a45ad4b7e34cf"
 	ecdsaKey, err := crypto.HexToECDSA(hexKey)
 	if err != nil {
 		panic(err)

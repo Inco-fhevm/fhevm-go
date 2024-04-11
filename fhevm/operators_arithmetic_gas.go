@@ -18,7 +18,7 @@ func sgxAddSubRequiredGas(environment EVMEnvironment, input []byte) uint64 {
 		return 0
 	}
 
-	return environment.FhevmParams().GasCosts.FheAddSub[lhs.fheUintType()]
+	return environment.FhevmParams().GasCosts.SgxAddSub[lhs.fheUintType()]
 }
 
 func fheAddSubRequiredGas(environment EVMEnvironment, input []byte) uint64 {
