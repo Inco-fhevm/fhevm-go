@@ -1,4 +1,4 @@
-package fhevm
+package sgx
 
 import (
 	"encoding/binary"
@@ -51,192 +51,37 @@ func GetFheLibMethod(signature uint32) (fheLibMethod *FheLibMethod, found bool) 
 }
 
 // All methods available in the fhelib precompile
-var fhelibMethods = []*FheLibMethod{
+var sgxlibMethods = []*FheLibMethod{
+	// SGX operations
 	{
-		name:                "fheAdd",
+		name:                "sgxAdd",
 		argTypes:            "(uint256,uint256,bytes1)",
-		requiredGasFunction: fheAddSubRequiredGas,
-		runFunction:         fheAddRun,
+		requiredGasFunction: sgxAddSubRequiredGas,
+		runFunction:         sgxAddRun,
 	},
 	{
-		name:                "fheSub",
+		name:                "sgxSub",
 		argTypes:            "(uint256,uint256,bytes1)",
-		requiredGasFunction: fheAddSubRequiredGas,
-		runFunction:         fheSubRun,
+		requiredGasFunction: sgxAddSubRequiredGas,
+		runFunction:         sgxSubRun,
 	},
 	{
-		name:                "fheMul",
+		name:                "sgxMul",
 		argTypes:            "(uint256,uint256,bytes1)",
-		requiredGasFunction: fheMulRequiredGas,
-		runFunction:         fheMulRun,
+		requiredGasFunction: sgxMulRequiredGas,
+		runFunction:         sgxMulRun,
 	},
 	{
-		name:                "fheDiv",
+		name:                "sgxDiv",
 		argTypes:            "(uint256,uint256,bytes1)",
-		requiredGasFunction: fheDivRequiredGas,
-		runFunction:         fheDivRun,
-	},
-	{
-		name:                "fheRem",
-		argTypes:            "(uint256,uint256,bytes1)",
-		requiredGasFunction: fheRemRequiredGas,
-		runFunction:         fheRemRun,
-	},
-	{
-		name:                "fheMin",
-		argTypes:            "(uint256,uint256,bytes1)",
-		requiredGasFunction: fheMinRequiredGas,
-		runFunction:         fheMinRun,
-	},
-	{
-		name:                "fheMax",
-		argTypes:            "(uint256,uint256,bytes1)",
-		requiredGasFunction: fheMaxRequiredGas,
-		runFunction:         fheMaxRun,
-	},
-	{
-		name:                "fheRand",
-		argTypes:            "(bytes1)",
-		requiredGasFunction: fheRandRequiredGas,
-		runFunction:         fheRandRun,
-	},
-	{
-		name:                "fheRandBounded",
-		argTypes:            "(uint256,bytes1)",
-		requiredGasFunction: fheRandBoundedRequiredGas,
-		runFunction:         fheRandBoundedRun,
-	},
-	{
-		name:                "cast",
-		argTypes:            "(uint256,bytes1)",
-		requiredGasFunction: castRequiredGas,
-		runFunction:         castRun,
-	},
-	{
-		name:                "fheLe",
-		argTypes:            "(uint256,uint256,bytes1)",
-		requiredGasFunction: fheLeRequiredGas,
-		runFunction:         fheLeRun,
-	},
-	{
-		name:                "fheLt",
-		argTypes:            "(uint256,uint256,bytes1)",
-		requiredGasFunction: fheLtRequiredGas,
-		runFunction:         fheLtRun,
-	},
-	{
-		name:                "fheEq",
-		argTypes:            "(uint256,uint256,bytes1)",
-		requiredGasFunction: fheEqRequiredGas,
-		runFunction:         fheEqRun,
-	},
-	{
-		name:                "fheGe",
-		argTypes:            "(uint256,uint256,bytes1)",
-		requiredGasFunction: fheGeRequiredGas,
-		runFunction:         fheGeRun,
-	},
-	{
-		name:                "fheGt",
-		argTypes:            "(uint256,uint256,bytes1)",
-		requiredGasFunction: fheGtRequiredGas,
-		runFunction:         fheGtRun,
-	},
-	{
-		name:                "fheShl",
-		argTypes:            "(uint256,uint256,bytes1)",
-		requiredGasFunction: fheShlRequiredGas,
-		runFunction:         fheShlRun,
-	},
-	{
-		name:                "fheShr",
-		argTypes:            "(uint256,uint256,bytes1)",
-		requiredGasFunction: fheShrRequiredGas,
-		runFunction:         fheShrRun,
-	},
-	{
-		name:                "fheNe",
-		argTypes:            "(uint256,uint256,bytes1)",
-		requiredGasFunction: fheNeRequiredGas,
-		runFunction:         fheNeRun,
-	},
-	{
-		name:                "fheNeg",
-		argTypes:            "(uint256)",
-		requiredGasFunction: fheNegRequiredGas,
-		runFunction:         fheNegRun,
-	},
-	{
-		name:                "fheNot",
-		argTypes:            "(uint256)",
-		requiredGasFunction: fheNotRequiredGas,
-		runFunction:         fheNotRun,
-	},
-	{
-		name:                "fheBitAnd",
-		argTypes:            "(uint256,uint256,bytes1)",
-		requiredGasFunction: fheBitAndRequiredGas,
-		runFunction:         fheBitAndRun,
-	},
-	{
-		name:                "fheBitOr",
-		argTypes:            "(uint256,uint256,bytes1)",
-		requiredGasFunction: fheBitOrRequiredGas,
-		runFunction:         fheBitOrRun,
-	},
-	{
-		name:                "fheBitXor",
-		argTypes:            "(uint256,uint256,bytes1)",
-		requiredGasFunction: fheBitXorRequiredGas,
-		runFunction:         fheBitXorRun,
-	},
-	{
-		name:                "fheIfThenElse",
-		argTypes:            "(uint256,uint256,uint256)",
-		requiredGasFunction: fheIfThenElseRequiredGas,
-		runFunction:         fheIfThenElseRun,
-	},
-	{
-		name:                "fhePubKey",
-		argTypes:            "(bytes1)",
-		requiredGasFunction: fhePubKeyRequiredGas,
-		runFunction:         fhePubKeyRun,
-	},
-	{
-		name:                "trivialEncrypt",
-		argTypes:            "(uint256,bytes1)",
-		requiredGasFunction: trivialEncryptRequiredGas,
-		runFunction:         trivialEncryptRun,
-	},
-	{
-		name:                "decrypt",
-		argTypes:            "(uint256)",
-		requiredGasFunction: decryptRequiredGas,
-		runFunction:         decryptRun,
-	},
-	{
-		name:                "reencrypt",
-		argTypes:            "(uint256,uint256)",
-		requiredGasFunction: reencryptRequiredGas,
-		runFunction:         reencryptRun,
-	},
-	{
-		name:                "verifyCiphertext",
-		argTypes:            "(bytes)",
-		requiredGasFunction: verifyCiphertextRequiredGas,
-		runFunction:         verifyCiphertextRun,
-	},
-	{
-		name:                "getCiphertext",
-		argTypes:            "(address,uint256)",
-		requiredGasFunction: getCiphertextRequiredGas,
-		runFunction:         getCiphertextRun,
+		requiredGasFunction: sgxDivRequiredGas,
+		runFunction:         sgxDivRun,
 	},
 }
 
 func init() {
 	// create the mapping for every available fhelib method
-	for _, method := range fhelibMethods {
+	for _, method := range sgxlibMethods {
 		signatureToFheLibMethod[method.Signature()] = method
 	}
 
