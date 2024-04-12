@@ -64,6 +64,7 @@ type GasCosts struct {
 	FheVerify         map[tfhe.FheUintType]uint64
 	FheGetCiphertext  map[tfhe.FheUintType]uint64
 	SgxAddSub         map[tfhe.FheUintType]uint64
+	SgxMul            map[tfhe.FheUintType]uint64
 }
 
 func DefaultGasCosts() GasCosts {
@@ -74,6 +75,13 @@ func DefaultGasCosts() GasCosts {
 			tfhe.FheUint16: 123000,
 			tfhe.FheUint32: 152000,
 			tfhe.FheUint64: 178000,
+		},
+		SgxMul: map[tfhe.FheUintType]uint64{
+			tfhe.FheUint4:  140000,
+			tfhe.FheUint8:  187000,
+			tfhe.FheUint16: 252000,
+			tfhe.FheUint32: 349000,
+			tfhe.FheUint64: 631000,
 		},
 		FheAddSub: map[tfhe.FheUintType]uint64{
 			tfhe.FheUint4:  55000 + AdjustFHEGas,

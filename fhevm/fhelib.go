@@ -59,6 +59,18 @@ var fhelibMethods = []*FheLibMethod{
 		requiredGasFunction: sgxAddSubRequiredGas,
 		runFunction:         sgxAddRun,
 	},
+	{
+		name:                "sgxSub",
+		argTypes:            "(uint256,uint256,bytes1)",
+		requiredGasFunction: sgxAddSubRequiredGas,
+		runFunction:         sgxSubRun,
+	},
+	{
+		name:                "sgxMul",
+		argTypes:            "(uint256,uint256,bytes1)",
+		requiredGasFunction: sgxMulRequiredGas,
+		runFunction:         sgxMulRun,
+	},
 	// fhe operations
 	{
 		name:                "fheAdd",
