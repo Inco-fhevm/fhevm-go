@@ -65,23 +65,40 @@ type GasCosts struct {
 	FheGetCiphertext  map[tfhe.FheUintType]uint64
 	SgxAddSub         map[tfhe.FheUintType]uint64
 	SgxMul            map[tfhe.FheUintType]uint64
+	SgxEncrypt        map[tfhe.FheUintType]uint64
+	SgxDecrypt        map[tfhe.FheUintType]uint64
 }
 
 func DefaultGasCosts() GasCosts {
 	return GasCosts{
 		SgxAddSub: map[tfhe.FheUintType]uint64{
-			tfhe.FheUint4:  55000,
-			tfhe.FheUint8:  84000,
-			tfhe.FheUint16: 123000,
-			tfhe.FheUint32: 152000,
-			tfhe.FheUint64: 178000,
+			tfhe.FheUint4:  550,
+			tfhe.FheUint8:  840,
+			tfhe.FheUint16: 1230,
+			tfhe.FheUint32: 1520,
+			tfhe.FheUint64: 1780,
 		},
 		SgxMul: map[tfhe.FheUintType]uint64{
-			tfhe.FheUint4:  140000,
-			tfhe.FheUint8:  187000,
-			tfhe.FheUint16: 252000,
-			tfhe.FheUint32: 349000,
-			tfhe.FheUint64: 631000,
+			tfhe.FheUint4:  1400,
+			tfhe.FheUint8:  1870,
+			tfhe.FheUint16: 2520,
+			tfhe.FheUint32: 3490,
+			tfhe.FheUint64: 6310,
+		},
+		SgxEncrypt: map[tfhe.FheUintType]uint64{
+			tfhe.FheBool:   100,
+			tfhe.FheUint4:  100,
+			tfhe.FheUint8:  100,
+			tfhe.FheUint16: 200,
+			tfhe.FheUint32: 300,
+			tfhe.FheUint64: 600,
+		},
+		SgxDecrypt: map[tfhe.FheUintType]uint64{
+			tfhe.FheUint4:  500,
+			tfhe.FheUint8:  500,
+			tfhe.FheUint16: 500,
+			tfhe.FheUint32: 500,
+			tfhe.FheUint64: 500,
 		},
 		FheAddSub: map[tfhe.FheUintType]uint64{
 			tfhe.FheUint4:  55000 + AdjustFHEGas,
