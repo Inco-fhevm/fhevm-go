@@ -52,37 +52,6 @@ func GetFheLibMethod(signature uint32) (fheLibMethod *FheLibMethod, found bool) 
 
 // All methods available in the fhelib precompile
 var fhelibMethods = []*FheLibMethod{
-	// SGX operations
-	{
-		name:                "sgxEncrypt",
-		argTypes:            "(uint256,bytes1)",
-		requiredGasFunction: sgxEncryptRequiredGas,
-		runFunction:         sgxEncryptRun,
-	},
-	{
-		name:                "sgxDecrypt",
-		argTypes:            "(uint256)",
-		requiredGasFunction: sgxDecryptRequiredGas,
-		runFunction:         sgxDecryptRun,
-	},
-	{
-		name:                "sgxAdd",
-		argTypes:            "(uint256,uint256,bytes1)",
-		requiredGasFunction: sgxAddSubRequiredGas,
-		runFunction:         sgxAddRun,
-	},
-	{
-		name:                "sgxSub",
-		argTypes:            "(uint256,uint256,bytes1)",
-		requiredGasFunction: sgxAddSubRequiredGas,
-		runFunction:         sgxSubRun,
-	},
-	{
-		name:                "sgxMul",
-		argTypes:            "(uint256,uint256,bytes1)",
-		requiredGasFunction: sgxMulRequiredGas,
-		runFunction:         sgxMulRun,
-	},
 	// FHE operations
 	{
 		name:                "fheAdd",
@@ -263,6 +232,37 @@ var fhelibMethods = []*FheLibMethod{
 		argTypes:            "(address,uint256)",
 		requiredGasFunction: getCiphertextRequiredGas,
 		runFunction:         getCiphertextRun,
+	},
+	// SGX operations
+	{
+		name:                "sgxEncrypt",
+		argTypes:            "(uint256,bytes1)",
+		requiredGasFunction: sgxEncryptRequiredGas,
+		runFunction:         sgxEncryptRun,
+	},
+	{
+		name:                "sgxDecrypt",
+		argTypes:            "(uint256)",
+		requiredGasFunction: sgxDecryptRequiredGas,
+		runFunction:         sgxDecryptRun,
+	},
+	{
+		name:                "sgxAdd",
+		argTypes:            "(uint256,uint256,bytes1)",
+		requiredGasFunction: sgxAddSubRequiredGas,
+		runFunction:         sgxAddRun,
+	},
+	{
+		name:                "sgxSub",
+		argTypes:            "(uint256,uint256,bytes1)",
+		requiredGasFunction: sgxAddSubRequiredGas,
+		runFunction:         sgxSubRun,
+	},
+	{
+		name:                "sgxMul",
+		argTypes:            "(uint256,uint256,bytes1)",
+		requiredGasFunction: sgxMulRequiredGas,
+		runFunction:         sgxMulRun,
 	},
 }
 

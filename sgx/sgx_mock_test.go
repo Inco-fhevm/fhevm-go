@@ -10,7 +10,7 @@ import (
 	"pgregory.net/rapid"
 )
 
-var sgxPlaintextDec *rapid.Generator[sgx.SgxPlaintext] = rapid.Custom(func(t *rapid.T) sgx.SgxPlaintext {
+var sgxPlaintextGen *rapid.Generator[sgx.SgxPlaintext] = rapid.Custom(func(t *rapid.T) sgx.SgxPlaintext {
 	bz := rapid.SliceOf(rapid.Byte()).Draw(t, "bz")
 	fheType := tfhe.FheUintType(rapid.Uint8().Draw(t, "fheType"))
 	address := common.Address(rapid.SliceOfN(rapid.Byte(), common.AddressLength, common.AddressLength).Draw(t, "address"))
@@ -23,7 +23,7 @@ func compareSgxPlaintexts(a, b sgx.SgxPlaintext) bool {
 
 func TestRoundTrip(t *testing.T) {
 	rapid.Check(t, func(t *rapid.T) {
-		a := sgxPlaintextDec.Draw(t, "a")
+		a := sgxPlaintextGen.Draw(t, "a")
 
 		// To -> From round trip
 		b, err := sgx.ToTfheCiphertext(a)

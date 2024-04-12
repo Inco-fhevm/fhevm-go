@@ -19,33 +19,33 @@ func extract2Operands(op string, environment EVMEnvironment, input []byte, runSp
 	lhs, rhs, err := get2VerifiedOperands(environment, input)
 	otelDescribeOperands(runSpan, encryptedOperand(*lhs), encryptedOperand(*rhs))
 	if err != nil {
-		logger.Error(op, "inputs not verified", "err", err, "input", hex.EncodeToString(input))
+		logger.Error(fmt.Sprintf("%s inputs not verified", op), "err", err, "input", hex.EncodeToString(input))
 		return nil, nil, nil, nil, err
 	}
 	if lhs.fheUintType() != rhs.fheUintType() {
-		logger.Error(op, "operand type mismatch", "lhs", lhs.fheUintType(), "rhs", rhs.fheUintType())
+		logger.Error(fmt.Sprintf("%s operand type mismatch", op), "lhs", lhs.fheUintType(), "rhs", rhs.fheUintType())
 		return nil, nil, nil, nil, errors.New("operand type mismatch")
 	}
 
-	lb, err := sgx.FromTfheCiphertext(lhs.ciphertext)
+	lp, err := sgx.FromTfheCiphertext(lhs.ciphertext)
 	if err != nil {
 		logger.Error(fmt.Sprintf("%s failed", op), "err", err)
 		return nil, nil, lhs, rhs, err
 	}
 
-	rb, err := sgx.FromTfheCiphertext(rhs.ciphertext)
+	rp, err := sgx.FromTfheCiphertext(rhs.ciphertext)
 	if err != nil {
 		logger.Error(fmt.Sprintf("%s failed", op), "err", err)
 		return nil, nil, lhs, rhs, err
 	}
 
-	return &lb, &rb, lhs, rhs, nil
+	return &lp, &rp, lhs, rhs, nil
 }
 
 func doArithmeticOperation(op string, environment EVMEnvironment, caller common.Address, input []byte, runSpan trace.Span, operator func(uint64, uint64) uint64) ([]byte, error) {
 	logger := environment.GetLogger()
 
-	lb, rb, lhs, rhs, err := extract2Operands(op, environment, input, runSpan)
+	lp, rp, lhs, rhs, err := extract2Operands(op, environment, input, runSpan)
 	if err != nil {
 		logger.Error(op, "failed", "err", err)
 		return nil, err
@@ -60,8 +60,8 @@ func doArithmeticOperation(op string, environment EVMEnvironment, caller common.
 	// A more efficient way would be to use binary.BigEndian.UintXX().
 	// However, that would require a switch case. We prefer for now to use
 	// big.Int as a one-liner that can handle variable-length bytes.
-	l := big.NewInt(0).SetBytes(lb.Plaintext).Uint64()
-	r := big.NewInt(0).SetBytes(rb.Plaintext).Uint64()
+	l := big.NewInt(0).SetBytes(lp.Plaintext).Uint64()
+	r := big.NewInt(0).SetBytes(rp.Plaintext).Uint64()
 
 	resultPlaintext := operator(l, r)
 
