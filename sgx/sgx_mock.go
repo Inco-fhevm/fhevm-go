@@ -3,7 +3,7 @@ package sgx
 import (
 	"bytes"
 	"crypto/rand"
-	"encoding/binary"
+	"encoding/gob"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
@@ -43,7 +43,7 @@ func ToTfheCiphertext(sgxCt SgxPlaintext) (tfhe.TfheCiphertext, error) {
 	// Encode the SgxPlaintext struct as a byte array.
 	// This will be used as the plaintext.
 	buf := new(bytes.Buffer)
-	err := binary.Write(buf, binary.BigEndian, sgxCt)
+	err := gob.NewEncoder(buf).Encode(sgxCt)
 	if err != nil {
 		return tfhe.TfheCiphertext{}, err
 	}
@@ -61,7 +61,7 @@ func ToTfheCiphertext(sgxCt SgxPlaintext) (tfhe.TfheCiphertext, error) {
 	}, nil
 }
 
-func FromTfheCiphertext(ct tfhe.TfheCiphertext) (SgxPlaintext, error) {
+func FromTfheCiphertext(ct *tfhe.TfheCiphertext) (SgxPlaintext, error) {
 	// Decrypt the ciphertext using the private key.
 	plaintext, err := key.Decrypt(ct.Serialization, nil, nil)
 	if err != nil {
@@ -71,7 +71,7 @@ func FromTfheCiphertext(ct tfhe.TfheCiphertext) (SgxPlaintext, error) {
 	// Decode the plaintext into a SgxPlaintext struct.
 	buf := bytes.NewReader(plaintext)
 	var sgxCt SgxPlaintext
-	err = binary.Read(buf, binary.BigEndian, &sgxCt)
+	err = gob.NewDecoder(buf).Decode(&sgxCt)
 	if err != nil {
 		return SgxPlaintext{}, err
 	}
