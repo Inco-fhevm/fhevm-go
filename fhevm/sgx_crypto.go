@@ -75,12 +75,12 @@ func sgxDecryptRun(environment EVMEnvironment, caller common.Address, addr commo
 	}
 
 	result, err := sgx.FromTfheCiphertext(ct.ciphertext)
-	plaintext := result.Plaintext
-
 	if err != nil {
 		logger.Error("sgxDecrypt failed", "err", err)
 		return nil, err
 	}
+
+	plaintext := result.Plaintext
 
 	logger.Info("sgxDecrypt success", "plaintext", plaintext)
 

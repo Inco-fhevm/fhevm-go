@@ -40,6 +40,7 @@ type FhevmParams struct {
 }
 
 type GasCosts struct {
+	//FHE Operations
 	FheCast           uint64
 	FhePubKey         uint64
 	FheAddSub         map[tfhe.FheUintType]uint64
@@ -63,42 +64,44 @@ type GasCosts struct {
 	FheIfThenElse     map[tfhe.FheUintType]uint64
 	FheVerify         map[tfhe.FheUintType]uint64
 	FheGetCiphertext  map[tfhe.FheUintType]uint64
-	SgxAddSub         map[tfhe.FheUintType]uint64
-	SgxMul            map[tfhe.FheUintType]uint64
-	SgxEncrypt        map[tfhe.FheUintType]uint64
-	SgxDecrypt        map[tfhe.FheUintType]uint64
+
+	// SGX Operations
+	SgxAddSub  map[tfhe.FheUintType]uint64
+	SgxMul     map[tfhe.FheUintType]uint64
+	SgxEncrypt map[tfhe.FheUintType]uint64
+	SgxDecrypt map[tfhe.FheUintType]uint64
 }
 
 func DefaultGasCosts() GasCosts {
 	return GasCosts{
 		SgxAddSub: map[tfhe.FheUintType]uint64{
-			tfhe.FheUint4:  550,
-			tfhe.FheUint8:  840,
-			tfhe.FheUint16: 1230,
-			tfhe.FheUint32: 1520,
-			tfhe.FheUint64: 1780,
+			tfhe.FheUint4:  55,
+			tfhe.FheUint8:  84,
+			tfhe.FheUint16: 123,
+			tfhe.FheUint32: 152,
+			tfhe.FheUint64: 178,
 		},
 		SgxMul: map[tfhe.FheUintType]uint64{
-			tfhe.FheUint4:  1400,
-			tfhe.FheUint8:  1870,
-			tfhe.FheUint16: 2520,
-			tfhe.FheUint32: 3490,
-			tfhe.FheUint64: 6310,
+			tfhe.FheUint4:  140,
+			tfhe.FheUint8:  187,
+			tfhe.FheUint16: 252,
+			tfhe.FheUint32: 349,
+			tfhe.FheUint64: 631,
 		},
 		SgxEncrypt: map[tfhe.FheUintType]uint64{
-			tfhe.FheBool:   100,
-			tfhe.FheUint4:  100,
-			tfhe.FheUint8:  100,
-			tfhe.FheUint16: 200,
-			tfhe.FheUint32: 300,
-			tfhe.FheUint64: 600,
+			tfhe.FheBool:   10,
+			tfhe.FheUint4:  10,
+			tfhe.FheUint8:  10,
+			tfhe.FheUint16: 20,
+			tfhe.FheUint32: 30,
+			tfhe.FheUint64: 60,
 		},
 		SgxDecrypt: map[tfhe.FheUintType]uint64{
-			tfhe.FheUint4:  500,
-			tfhe.FheUint8:  500,
-			tfhe.FheUint16: 500,
-			tfhe.FheUint32: 500,
-			tfhe.FheUint64: 500,
+			tfhe.FheUint4:  50,
+			tfhe.FheUint8:  50,
+			tfhe.FheUint16: 50,
+			tfhe.FheUint32: 50,
+			tfhe.FheUint64: 50,
 		},
 		FheAddSub: map[tfhe.FheUintType]uint64{
 			tfhe.FheUint4:  55000 + AdjustFHEGas,

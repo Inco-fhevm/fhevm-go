@@ -3,6 +3,7 @@ package fhevm
 import (
 	"encoding/hex"
 	"errors"
+	"fmt"
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -10,7 +11,7 @@ import (
 	"go.opentelemetry.io/otel/trace"
 )
 
-func sgxAddRun(environment EVMEnvironment, caller common.Address, addr common.Address, input []byte, readOnly bool, runSpan trace.Span) ([]byte, error) {
+func extract2Operands(op string, environment EVMEnvironment, input []byte, runSpan trace.Span) (*sgx.SgxPlaintext, *sgx.SgxPlaintext, *verifiedCiphertext, *verifiedCiphertext, error) {
 	input = input[:minInt(65, len(input))]
 
 	logger := environment.GetLogger()
@@ -18,27 +19,38 @@ func sgxAddRun(environment EVMEnvironment, caller common.Address, addr common.Ad
 	lhs, rhs, err := get2VerifiedOperands(environment, input)
 	otelDescribeOperands(runSpan, encryptedOperand(*lhs), encryptedOperand(*rhs))
 	if err != nil {
-		logger.Error("sgxAdd inputs not verified", "err", err, "input", hex.EncodeToString(input))
-		return nil, err
+		logger.Error(op, "inputs not verified", "err", err, "input", hex.EncodeToString(input))
+		return nil, nil, nil, nil, err
 	}
 	if lhs.fheUintType() != rhs.fheUintType() {
-		msg := "sgxAdd operand type mismatch"
-		logger.Error(msg, "lhs", lhs.fheUintType(), "rhs", rhs.fheUintType())
-		return nil, errors.New(msg)
+		logger.Error(op, "operand type mismatch", "lhs", lhs.fheUintType(), "rhs", rhs.fheUintType())
+		return nil, nil, nil, nil, errors.New("operand type mismatch")
 	}
 
 	// If we are doing gas estimation, skip execution and insert a random ciphertext as a result.
-	if !environment.IsCommitting() && !environment.IsEthCall() {
-		return importRandomCiphertext(environment, lhs.fheUintType()), nil
-	}
+	// if !environment.IsCommitting() && !environment.IsEthCall() {
+	// 	return importRandomCiphertext(environment, lhs.fheUintType()), nil
+	// }
 
 	lb, err := sgx.FromTfheCiphertext(lhs.ciphertext)
 	if err != nil {
-		logger.Error("sgxAdd failed", "err", err)
-		return nil, err
+		logger.Error(fmt.Sprintf("%s failed", op), "err", err)
+		return nil, nil, lhs, rhs, err
 	}
 
 	rb, err := sgx.FromTfheCiphertext(rhs.ciphertext)
+	if err != nil {
+		logger.Error(fmt.Sprintf("%s failed", op), "err", err)
+		return nil, nil, lhs, rhs, err
+	}
+
+	return &lb, &rb, lhs, rhs, nil
+}
+
+func sgxAddRun(environment EVMEnvironment, caller common.Address, addr common.Address, input []byte, readOnly bool, runSpan trace.Span) ([]byte, error) {
+	logger := environment.GetLogger()
+
+	lb, rb, lhs, rhs, err := extract2Operands("sgxAdd", environment, input, runSpan)
 	if err != nil {
 		logger.Error("sgxAdd failed", "err", err)
 		return nil, err
@@ -74,34 +86,9 @@ func sgxAddRun(environment EVMEnvironment, caller common.Address, addr common.Ad
 }
 
 func sgxSubRun(environment EVMEnvironment, caller common.Address, addr common.Address, input []byte, readOnly bool, runSpan trace.Span) ([]byte, error) {
-	input = input[:minInt(65, len(input))]
-
 	logger := environment.GetLogger()
 
-	lhs, rhs, err := get2VerifiedOperands(environment, input)
-	otelDescribeOperands(runSpan, encryptedOperand(*lhs), encryptedOperand(*rhs))
-	if err != nil {
-		logger.Error("sgxSub inputs not verified", "err", err, "input", hex.EncodeToString(input))
-		return nil, err
-	}
-	if lhs.fheUintType() != rhs.fheUintType() {
-		msg := "sgxSub operand type mismatch"
-		logger.Error(msg, "lhs", lhs.fheUintType(), "rhs", rhs.fheUintType())
-		return nil, errors.New(msg)
-	}
-
-	// If we are doing gas estimation, skip execution and insert a random ciphertext as a result.
-	if !environment.IsCommitting() && !environment.IsEthCall() {
-		return importRandomCiphertext(environment, lhs.fheUintType()), nil
-	}
-
-	lb, err := sgx.FromTfheCiphertext(lhs.ciphertext)
-	if err != nil {
-		logger.Error("sgxSub failed", "err", err)
-		return nil, err
-	}
-
-	rb, err := sgx.FromTfheCiphertext(rhs.ciphertext)
+	lb, rb, lhs, rhs, err := extract2Operands("sgxSub", environment, input, runSpan)
 	if err != nil {
 		logger.Error("sgxSub failed", "err", err)
 		return nil, err
@@ -137,34 +124,9 @@ func sgxSubRun(environment EVMEnvironment, caller common.Address, addr common.Ad
 }
 
 func sgxMulRun(environment EVMEnvironment, caller common.Address, addr common.Address, input []byte, readOnly bool, runSpan trace.Span) ([]byte, error) {
-	input = input[:minInt(65, len(input))]
-
 	logger := environment.GetLogger()
 
-	lhs, rhs, err := get2VerifiedOperands(environment, input)
-	otelDescribeOperands(runSpan, encryptedOperand(*lhs), encryptedOperand(*rhs))
-	if err != nil {
-		logger.Error("sgxMul inputs not verified", "err", err, "input", hex.EncodeToString(input))
-		return nil, err
-	}
-	if lhs.fheUintType() != rhs.fheUintType() {
-		msg := "sgxMul operand type mismatch"
-		logger.Error(msg, "lhs", lhs.fheUintType(), "rhs", rhs.fheUintType())
-		return nil, errors.New(msg)
-	}
-
-	// If we are doing gas estimation, skip execution and insert a random ciphertext as a result.
-	if !environment.IsCommitting() && !environment.IsEthCall() {
-		return importRandomCiphertext(environment, lhs.fheUintType()), nil
-	}
-
-	lb, err := sgx.FromTfheCiphertext(lhs.ciphertext)
-	if err != nil {
-		logger.Error("sgxMul failed", "err", err)
-		return nil, err
-	}
-
-	rb, err := sgx.FromTfheCiphertext(rhs.ciphertext)
+	lb, rb, lhs, rhs, err := extract2Operands("sgxMul", environment, input, runSpan)
 	if err != nil {
 		logger.Error("sgxMul failed", "err", err)
 		return nil, err
