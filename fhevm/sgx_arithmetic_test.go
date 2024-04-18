@@ -10,11 +10,11 @@ import (
 )
 
 func TestSgxAddRun(t *testing.T) {
-	// SgxLibAdd(t, tfhe.FheUint4)
+	SgxLibAdd(t, tfhe.FheUint4)
 	SgxLibAdd(t, tfhe.FheUint8)
-	// SgxLibAdd(t, tfhe.FheUint16)
-	// SgxLibAdd(t, tfhe.FheUint32)
-	// SgxLibAdd(t, tfhe.FheUint64)
+	SgxLibAdd(t, tfhe.FheUint16)
+	SgxLibAdd(t, tfhe.FheUint32)
+	SgxLibAdd(t, tfhe.FheUint64)
 }
 
 func SgxLibAdd(t *testing.T, fheUintType tfhe.FheUintType) {
@@ -66,8 +66,8 @@ func SgxLibAdd(t *testing.T, fheUintType tfhe.FheUintType) {
 		t.Fatalf(err.Error())
 	}
 
-	if decryptedSgxPlaintext.Type != fheUintType {
-		t.Fatalf("incorrect fheUintType, expected=%s, got=%s", fheUintType, decryptedSgxPlaintext.Type)
+	if decryptedSgxPlaintext.FheUintType != fheUintType {
+		t.Fatalf("incorrect fheUintType, expected=%s, got=%s", fheUintType, decryptedSgxPlaintext.FheUintType)
 	}
 
 	var decryptedResult uint64
@@ -85,7 +85,7 @@ func SgxLibAdd(t *testing.T, fheUintType tfhe.FheUintType) {
 	}
 
 	if decryptedResult != expected {
-		t.Fatalf("incorrect result, expected=%d, got=%s", expected, decryptedSgxPlaintext)
+		t.Fatalf("incorrect result, expected=%d, got=%d", expected, decryptedResult)
 	}
 }
 

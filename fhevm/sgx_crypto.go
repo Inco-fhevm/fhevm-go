@@ -80,7 +80,7 @@ func sgxDecryptRun(environment EVMEnvironment, caller common.Address, addr commo
 		return nil, err
 	}
 
-	plaintext := result.Plaintext
+	plaintext := result.Value
 
 	logger.Info("sgxDecrypt success", "plaintext", plaintext)
 

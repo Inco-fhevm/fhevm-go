@@ -63,28 +63,23 @@ func doArithmeticOperation(op string, environment EVMEnvironment, caller common.
 	//
 	// Note that we do arithmetic operations on uint64, then we convert th
 	// result back to the FheUintType.
-	l := big.NewInt(0).SetBytes(lp.Plaintext).Uint64()
-	r := big.NewInt(0).SetBytes(rp.Plaintext).Uint64()
+	l := big.NewInt(0).SetBytes(lp.Value).Uint64()
+	r := big.NewInt(0).SetBytes(rp.Value).Uint64()
 
 	resultPlaintext := operator(l, r)
+	i := new(big.Int).SetUint64(resultPlaintext)
 
-	resultPlaintextByte := make([]byte, 32)
-	resultByte := big.NewInt(0)
-	resultByte.SetUint64(resultPlaintext)
-	resultByte.FillBytes(resultPlaintextByte)
+	sgxPlaintext := sgx.NewSgxPlaintext(i.Bytes(), lhs.fheUintType(), caller)
 
-	sgxPlaintext := sgx.NewSgxPlaintext(resultPlaintextByte, lhs.fheUintType(), caller)
-
-	result, err := sgx.ToTfheCiphertext(sgxPlaintext)
-
+	resultCt, err := sgx.ToTfheCiphertext(sgxPlaintext)
 	if err != nil {
 		logger.Error(op, "failed", "err", err)
 		return nil, err
 	}
-	importCiphertext(environment, &result)
+	importCiphertext(environment, &resultCt)
 
-	resultHash := result.GetHash()
-	logger.Info(op, "success", "lhs", lhs.hash().Hex(), "rhs", rhs.hash().Hex(), "result", resultHash.Hex())
+	resultHash := resultCt.GetHash()
+	logger.Info(fmt.Sprintf("%s success", op), "lhs", lhs.hash().Hex(), "rhs", rhs.hash().Hex(), "result", resultHash.Hex())
 	return resultHash[:], nil
 }
 

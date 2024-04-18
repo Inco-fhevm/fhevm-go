@@ -18,7 +18,7 @@ var sgxPlaintextGen *rapid.Generator[sgx.SgxPlaintext] = rapid.Custom(func(t *ra
 })
 
 func compareSgxPlaintexts(a, b sgx.SgxPlaintext) bool {
-	return bytes.Equal(a.Plaintext, b.Plaintext) && a.Type == b.Type && a.Address == b.Address
+	return bytes.Equal(a.Value, b.Value) && a.FheUintType == b.FheUintType && a.Address == b.Address
 }
 
 func TestRoundTrip(t *testing.T) {
