@@ -60,6 +60,9 @@ func doArithmeticOperation(op string, environment EVMEnvironment, caller common.
 	// A more efficient way would be to use binary.BigEndian.UintXX().
 	// However, that would require a switch case. We prefer for now to use
 	// big.Int as a one-liner that can handle variable-length bytes.
+	//
+	// Note that we do arithmetic operations on uint64, then we convert th
+	// result back to the FheUintType.
 	l := big.NewInt(0).SetBytes(lp.Plaintext).Uint64()
 	r := big.NewInt(0).SetBytes(rp.Plaintext).Uint64()
 

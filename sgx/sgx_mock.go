@@ -3,7 +3,9 @@ package sgx
 import (
 	"bytes"
 	"crypto/rand"
+	"encoding/binary"
 	"encoding/gob"
+	"fmt"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
@@ -37,6 +39,42 @@ func NewSgxPlaintext(plaintext []byte, fheType tfhe.FheUintType, address common.
 		fheType,
 		address,
 	}
+}
+
+// AsUint8 returns the plaintext as a uint8.
+func (sp SgxPlaintext) AsUint8() uint8 {
+	if sp.Type != tfhe.FheUint4 && sp.Type != tfhe.FheUint8 {
+		panic(fmt.Sprintf("Expected FheUint4 or FheUint8, got %s", sp.Type))
+	}
+
+	return sp.Plaintext[0]
+}
+
+// AsUint16 returns the plaintext as a uint16.
+func (sp SgxPlaintext) AsUint16() uint16 {
+	if sp.Type != tfhe.FheUint16 {
+		panic(fmt.Sprintf("Expected FheUint16, got %s", sp.Type))
+	}
+
+	return binary.BigEndian.Uint16(sp.Plaintext)
+}
+
+// AsUint32 returns the plaintext as a uint32.
+func (sp SgxPlaintext) AsUint32() uint32 {
+	if sp.Type != tfhe.FheUint32 {
+		panic(fmt.Sprintf("Expected FheUint32, got %s", sp.Type))
+	}
+
+	return binary.BigEndian.Uint32(sp.Plaintext)
+}
+
+// AsUint64 returns the plaintext as a uint64.
+func (sp SgxPlaintext) AsUint64() uint64 {
+	if sp.Type != tfhe.FheUint64 {
+		panic(fmt.Sprintf("expected FheUint64, got %s", sp.Type))
+	}
+
+	return binary.BigEndian.Uint64(sp.Plaintext)
 }
 
 func ToTfheCiphertext(sgxCt SgxPlaintext) (tfhe.TfheCiphertext, error) {
