@@ -1,6 +1,7 @@
 package fhevm
 
 import (
+	"fmt"
 	"math/big"
 	"testing"
 
@@ -10,34 +11,79 @@ import (
 )
 
 func TestSgxAddRun(t *testing.T) {
-	SgxLibAdd(t, tfhe.FheUint4)
-	SgxLibAdd(t, tfhe.FheUint8)
-	SgxLibAdd(t, tfhe.FheUint16)
-	SgxLibAdd(t, tfhe.FheUint32)
-	SgxLibAdd(t, tfhe.FheUint64)
+	op := func(lhs, rhs uint64) uint64 {
+		return lhs + rhs
+	}
+	signature := "sgxAdd(uint256,uint256,bytes1)"
+
+	testcases := []struct {
+		typ tfhe.FheUintType
+		lhs uint64
+		rhs uint64
+	}{
+		{tfhe.FheUint4, 2, 1},
+		{tfhe.FheUint8, 2, 1},
+		{tfhe.FheUint16, 4283, 1337},
+		{tfhe.FheUint32, 1333337, 1337},
+		{tfhe.FheUint64, 13333377777777777, 133377777777},
+	}
+	for _, tc := range testcases {
+		t.Run(fmt.Sprintf("sgxAdd with %s", tc.typ), func(t *testing.T) {
+			testSgxArithmetic(t, tc.typ, tc.lhs, tc.rhs, op, signature)
+		})
+	}
 }
 
-func SgxLibAdd(t *testing.T, fheUintType tfhe.FheUintType) {
-	var lhs, rhs uint64
-	switch fheUintType {
-	case tfhe.FheUint4:
-		lhs = 2
-		rhs = 1
-	case tfhe.FheUint8:
-		lhs = 2
-		rhs = 1
-	case tfhe.FheUint16:
-		lhs = 4283
-		rhs = 1337
-	case tfhe.FheUint32:
-		lhs = 1333337
-		rhs = 133337
-	case tfhe.FheUint64:
-		lhs = 13333377777777777
-		rhs = 133377777777
+func TestSgxSubRun(t *testing.T) {
+	op := func(lhs, rhs uint64) uint64 {
+		return lhs - rhs
 	}
-	expected := lhs + rhs
-	signature := "sgxAdd(uint256,uint256,bytes1)"
+	signature := "sgxSub(uint256,uint256,bytes1)"
+
+	testcases := []struct {
+		typ tfhe.FheUintType
+		lhs uint64
+		rhs uint64
+	}{
+		{tfhe.FheUint4, 2, 1},
+		{tfhe.FheUint8, 2, 1},
+		{tfhe.FheUint16, 4283, 1337},
+		{tfhe.FheUint32, 1333337, 1337},
+		{tfhe.FheUint64, 13333377777777777, 133377777777},
+	}
+	for _, tc := range testcases {
+		t.Run(fmt.Sprintf("sgxAdd with %s", tc.typ), func(t *testing.T) {
+			testSgxArithmetic(t, tc.typ, tc.lhs, tc.rhs, op, signature)
+		})
+	}
+}
+
+func TestSgxMulRun(t *testing.T) {
+	op := func(lhs, rhs uint64) uint64 {
+		return lhs * rhs
+	}
+	signature := "sgxMul(uint256,uint256,bytes1)"
+
+	testcases := []struct {
+		typ tfhe.FheUintType
+		lhs uint64
+		rhs uint64
+	}{
+		{tfhe.FheUint4, 2, 3},
+		{tfhe.FheUint8, 2, 3},
+		{tfhe.FheUint16, 169, 5},
+		{tfhe.FheUint32, 137, 17},
+		{tfhe.FheUint64, 137777, 17},
+	}
+	for _, tc := range testcases {
+		t.Run(fmt.Sprintf("sgxAdd with %s", tc.typ), func(t *testing.T) {
+			testSgxArithmetic(t, tc.typ, tc.lhs, tc.rhs, op, signature)
+		})
+	}
+}
+
+func testSgxArithmetic(t *testing.T, fheUintType tfhe.FheUintType, lhs, rhs uint64, op func(lhs, rhs uint64) uint64, signature string) {
+	expected := op(lhs, rhs)
 	depth := 1
 	environment := newTestEVMEnvironment()
 	environment.depth = depth
@@ -61,7 +107,7 @@ func SgxLibAdd(t *testing.T, fheUintType tfhe.FheUintType) {
 	if res == nil {
 		t.Fatalf("output ciphertext is not found in verifiedCiphertexts")
 	}
-	decryptedSgxPlaintext, err := sgx.FromTfheCiphertext(res.ciphertext)
+	decryptedSgxPlaintext, err := sgx.Decrypt(res.ciphertext)
 	if err != nil {
 		t.Fatalf(err.Error())
 	}
@@ -99,7 +145,7 @@ func importSgxCiphertextToEVM(environment EVMEnvironment, depth int, value uint6
 	if err != nil {
 		return tfhe.TfheCiphertext{}, err
 	}
-	ct, err := sgx.ToTfheCiphertext(sgxPlaintext)
+	ct, err := sgx.Encrypt(sgxPlaintext)
 	if err != nil {
 		return tfhe.TfheCiphertext{}, err
 	}

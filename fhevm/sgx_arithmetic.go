@@ -1,12 +1,14 @@
 package fhevm
 
 import (
+	"encoding/binary"
 	"encoding/hex"
 	"errors"
 	"fmt"
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/zama-ai/fhevm-go/fhevm/tfhe"
 	"github.com/zama-ai/fhevm-go/sgx"
 	"go.opentelemetry.io/otel/trace"
 )
@@ -27,13 +29,13 @@ func extract2Operands(op string, environment EVMEnvironment, input []byte, runSp
 		return nil, nil, nil, nil, errors.New("operand type mismatch")
 	}
 
-	lp, err := sgx.FromTfheCiphertext(lhs.ciphertext)
+	lp, err := sgx.Decrypt(lhs.ciphertext)
 	if err != nil {
 		logger.Error(fmt.Sprintf("%s failed", op), "err", err)
 		return nil, nil, lhs, rhs, err
 	}
 
-	rp, err := sgx.FromTfheCiphertext(rhs.ciphertext)
+	rp, err := sgx.Decrypt(rhs.ciphertext)
 	if err != nil {
 		logger.Error(fmt.Sprintf("%s failed", op), "err", err)
 		return nil, nil, lhs, rhs, err
@@ -56,6 +58,11 @@ func doArithmeticOperation(op string, environment EVMEnvironment, caller common.
 		return importRandomCiphertext(environment, lhs.fheUintType()), nil
 	}
 
+	// TODO ref: https://github.com/Inco-fhevm/inco-monorepo/issues/6
+	if lp.FheUintType == tfhe.FheUint128 || lp.FheUintType == tfhe.FheUint160 {
+		panic("TODO implement me")
+	}
+
 	// Using math/big here to make code more readable.
 	// A more efficient way would be to use binary.BigEndian.UintXX().
 	// However, that would require a switch case. We prefer for now to use
@@ -67,11 +74,27 @@ func doArithmeticOperation(op string, environment EVMEnvironment, caller common.
 	r := big.NewInt(0).SetBytes(rp.Value).Uint64()
 
 	resultPlaintext := operator(l, r)
-	i := new(big.Int).SetUint64(resultPlaintext)
 
-	sgxPlaintext := sgx.NewSgxPlaintext(i.Bytes(), lhs.fheUintType(), caller)
+	var resultBz []byte
+	switch lhs.fheUintType() {
+	case tfhe.FheUint4:
+		resultBz = []byte{byte(resultPlaintext)}
+	case tfhe.FheUint8:
+		resultBz = []byte{byte(resultPlaintext)}
+	case tfhe.FheUint16:
+		resultBz = make([]byte, 2)
+		binary.BigEndian.PutUint16(resultBz, uint16(resultPlaintext))
+	case tfhe.FheUint32:
+		resultBz = make([]byte, 4)
+		binary.BigEndian.PutUint32(resultBz, uint32(resultPlaintext))
+	case tfhe.FheUint64:
+		resultBz = make([]byte, 8)
+		binary.BigEndian.PutUint64(resultBz, resultPlaintext)
+	}
 
-	resultCt, err := sgx.ToTfheCiphertext(sgxPlaintext)
+	sgxPlaintext := sgx.NewSgxPlaintext(resultBz, lhs.fheUintType(), caller)
+
+	resultCt, err := sgx.Encrypt(sgxPlaintext)
 	if err != nil {
 		logger.Error(op, "failed", "err", err)
 		return nil, err
