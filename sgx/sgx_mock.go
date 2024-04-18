@@ -116,21 +116,5 @@ func FromTfheCiphertext(ct *tfhe.TfheCiphertext) (SgxPlaintext, error) {
 		return SgxPlaintext{}, err
 	}
 
-	// Update the Value field to have the minimum length.
-	switch sgxCt.FheUintType {
-	case tfhe.FheUint4:
-		sgxCt.Value = sgxCt.Value[:1]
-	case tfhe.FheUint8:
-		sgxCt.Value = sgxCt.Value[:1]
-	case tfhe.FheUint16:
-		sgxCt.Value = sgxCt.Value[:2]
-	case tfhe.FheUint32:
-		sgxCt.Value = sgxCt.Value[:4]
-	case tfhe.FheUint64:
-		sgxCt.Value = sgxCt.Value[:8]
-	default:
-		return SgxPlaintext{}, fmt.Errorf("unsupported FheUintType: %s", sgxCt.FheUintType)
-	}
-
 	return sgxCt, nil
 }
