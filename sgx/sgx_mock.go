@@ -78,7 +78,7 @@ func (sp SgxPlaintext) AsUint64() uint64 {
 	return binary.BigEndian.Uint64(sp.Value)
 }
 
-func ToTfheCiphertext(sgxCt SgxPlaintext) (tfhe.TfheCiphertext, error) {
+func Encrypt(sgxCt SgxPlaintext) (tfhe.TfheCiphertext, error) {
 	// Encode the SgxPlaintext struct as a byte array using JSON.
 	// This will be used as the plaintext for the ECIES encryption.
 	//
@@ -102,19 +102,19 @@ func ToTfheCiphertext(sgxCt SgxPlaintext) (tfhe.TfheCiphertext, error) {
 	}, nil
 }
 
-func FromTfheCiphertext(ct *tfhe.TfheCiphertext) (SgxPlaintext, error) {
+func Decrypt(ct *tfhe.TfheCiphertext) (SgxPlaintext, error) {
 	// Decrypt the ciphertext using the private key.
-	plaintext, err := key.Decrypt(ct.Serialization, nil, nil)
+	plaintextBz, err := key.Decrypt(ct.Serialization, nil, nil)
 	if err != nil {
 		return SgxPlaintext{}, err
 	}
 
-	// Decode the plaintext into a SgxPlaintext struct.
-	var sgxCt SgxPlaintext
-	err = json.Unmarshal(plaintext, &sgxCt)
+	// Decode the plaintext bytes into a SgxPlaintext struct.
+	var plaintext SgxPlaintext
+	err = json.Unmarshal(plaintextBz, &plaintext)
 	if err != nil {
 		return SgxPlaintext{}, err
 	}
 
-	return sgxCt, nil
+	return plaintext, nil
 }

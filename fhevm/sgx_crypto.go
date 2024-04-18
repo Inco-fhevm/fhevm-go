@@ -28,7 +28,7 @@ func sgxEncryptRun(environment EVMEnvironment, caller common.Address, addr commo
 
 	sgxPlaintext := sgx.NewSgxPlaintext(input[0:32], encryptToType, caller)
 
-	ct, err := sgx.ToTfheCiphertext(sgxPlaintext)
+	ct, err := sgx.Encrypt(sgxPlaintext)
 
 	if err != nil {
 		logger.Error("sgxEncrypt failed", "err", err)
@@ -74,7 +74,7 @@ func sgxDecryptRun(environment EVMEnvironment, caller common.Address, addr commo
 		return bytes.Repeat([]byte{0xFF}, 32), nil
 	}
 
-	result, err := sgx.FromTfheCiphertext(ct.ciphertext)
+	result, err := sgx.Decrypt(ct.ciphertext)
 	if err != nil {
 		logger.Error("sgxDecrypt failed", "err", err)
 		return nil, err

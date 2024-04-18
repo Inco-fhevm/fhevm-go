@@ -25,17 +25,43 @@ func TestRoundTrip(t *testing.T) {
 	rapid.Check(t, func(t *rapid.T) {
 		a := sgxPlaintextGen.Draw(t, "a")
 
-		// To -> From round trip
-		b, err := sgx.ToTfheCiphertext(a)
+		// Encrypt -> Decrypt round trip
+		b, err := sgx.Encrypt(a)
 		if err != nil {
 			t.Fatal(err)
 		}
-		c, err := sgx.FromTfheCiphertext(&b)
+		c, err := sgx.Decrypt(&b)
 		if err != nil {
 			t.Fatal(err)
 		}
 		if !compareSgxPlaintexts(a, c) {
 			t.Fatalf("expected %v, got %v", a, c)
+		}
+	})
+}
+
+func TestUniqueCiphertexts(t *testing.T) {
+	rapid.Check(t, func(t *rapid.T) {
+		a := sgxPlaintextGen.Draw(t, "a")
+
+		// Encrypt twice the same plaintext
+		b, err := sgx.Encrypt(a)
+		if err != nil {
+			t.Fatal(err)
+		}
+		c, err := sgx.Encrypt(a)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		// Make sure the ciphertexts are different
+		if bytes.Equal(b.Serialization, c.Serialization) {
+			t.Fatalf("expected different ciphertexts, got %v", b)
+		}
+
+		// Make sure the hashes (handles) are different
+		if bytes.Equal(b.GetHash().Bytes(), c.GetHash().Bytes()) {
+			t.Fatalf("expected different hashes, got %v", b.GetHash())
 		}
 	})
 }
