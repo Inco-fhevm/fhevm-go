@@ -83,7 +83,6 @@ func TestSgxMulRun(t *testing.T) {
 }
 
 func testSgxArithmetic(t *testing.T, fheUintType tfhe.FheUintType, lhs, rhs uint64, op func(lhs, rhs uint64) uint64, signature string) {
-	expected := op(lhs, rhs)
 	depth := 1
 	environment := newTestEVMEnvironment()
 	environment.depth = depth
@@ -107,31 +106,20 @@ func testSgxArithmetic(t *testing.T, fheUintType tfhe.FheUintType, lhs, rhs uint
 	if res == nil {
 		t.Fatalf("output ciphertext is not found in verifiedCiphertexts")
 	}
-	decryptedSgxPlaintext, err := sgx.Decrypt(res.ciphertext)
+	sgxPlaintext, err := sgx.Decrypt(res.ciphertext)
 	if err != nil {
 		t.Fatalf(err.Error())
 	}
 
-	if decryptedSgxPlaintext.FheUintType != fheUintType {
-		t.Fatalf("incorrect fheUintType, expected=%s, got=%s", fheUintType, decryptedSgxPlaintext.FheUintType)
+	if sgxPlaintext.FheUintType != fheUintType {
+		t.Fatalf("incorrect fheUintType, expected=%s, got=%s", fheUintType, sgxPlaintext.FheUintType)
 	}
 
-	var decryptedResult uint64
-	switch fheUintType {
-	case tfhe.FheUint4:
-		decryptedResult = uint64(decryptedSgxPlaintext.AsUint8())
-	case tfhe.FheUint8:
-		decryptedResult = uint64(decryptedSgxPlaintext.AsUint8())
-	case tfhe.FheUint16:
-		decryptedResult = uint64(decryptedSgxPlaintext.AsUint16())
-	case tfhe.FheUint32:
-		decryptedResult = uint64(decryptedSgxPlaintext.AsUint32())
-	case tfhe.FheUint64:
-		decryptedResult = decryptedSgxPlaintext.AsUint64()
-	}
+	result := new(big.Int).SetBytes(sgxPlaintext.Value).Uint64()
 
-	if decryptedResult != expected {
-		t.Fatalf("incorrect result, expected=%d, got=%d", expected, decryptedResult)
+	expected := op(lhs, rhs)
+	if result != expected {
+		t.Fatalf("incorrect result, expected=%d, got=%d", expected, result)
 	}
 }
 
