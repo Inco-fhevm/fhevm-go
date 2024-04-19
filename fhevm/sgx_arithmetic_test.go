@@ -52,7 +52,7 @@ func TestSgxSubRun(t *testing.T) {
 		{tfhe.FheUint64, 13333377777777777, 133377777777},
 	}
 	for _, tc := range testcases {
-		t.Run(fmt.Sprintf("sgxAdd with %s", tc.typ), func(t *testing.T) {
+		t.Run(fmt.Sprintf("sgxSub with %s", tc.typ), func(t *testing.T) {
 			sgxArithmeticHelper(t, tc.typ, tc.lhs, tc.rhs, op, signature)
 		})
 	}
@@ -76,7 +76,7 @@ func TestSgxMulRun(t *testing.T) {
 		{tfhe.FheUint64, 137777, 17},
 	}
 	for _, tc := range testcases {
-		t.Run(fmt.Sprintf("sgxAdd with %s", tc.typ), func(t *testing.T) {
+		t.Run(fmt.Sprintf("sgxMul with %s", tc.typ), func(t *testing.T) {
 			sgxArithmeticHelper(t, tc.typ, tc.lhs, tc.rhs, op, signature)
 		})
 	}
