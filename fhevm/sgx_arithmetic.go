@@ -73,25 +73,11 @@ func doArithmeticOperation(op string, environment EVMEnvironment, caller common.
 	l := big.NewInt(0).SetBytes(lp.Value).Uint64()
 	r := big.NewInt(0).SetBytes(rp.Value).Uint64()
 
-	resultPlaintext := operator(l, r)
-
-	var resultBz []byte
-	switch lhs.fheUintType() {
-	case tfhe.FheUint4:
-		resultBz = []byte{byte(resultPlaintext)}
-	case tfhe.FheUint8:
-		resultBz = []byte{byte(resultPlaintext)}
-	case tfhe.FheUint16:
-		resultBz = make([]byte, 2)
-		binary.BigEndian.PutUint16(resultBz, uint16(resultPlaintext))
-	case tfhe.FheUint32:
-		resultBz = make([]byte, 4)
-		binary.BigEndian.PutUint32(resultBz, uint32(resultPlaintext))
-	case tfhe.FheUint64:
-		resultBz = make([]byte, 8)
-		binary.BigEndian.PutUint64(resultBz, resultPlaintext)
+	result := operator(l, r)
+	resultBz, err := marshalUint(result, lhs.fheUintType())
+	if err != nil {
+		return nil, err
 	}
-
 	sgxPlaintext := sgx.NewSgxPlaintext(resultBz, lhs.fheUintType(), caller)
 
 	resultCt, err := sgx.Encrypt(sgxPlaintext)
@@ -122,4 +108,30 @@ func sgxMulRun(environment EVMEnvironment, caller common.Address, addr common.Ad
 	return doArithmeticOperation("sgxMulRun", environment, caller, input, runSpan, func(a uint64, b uint64) uint64 {
 		return a * b
 	})
+}
+
+// marshalUint converts a uint64 to a byte slice whose length is based on the
+// FheUintType.
+func marshalUint(value uint64, typ tfhe.FheUintType) ([]byte, error) {
+	var resultBz []byte
+
+	switch typ {
+	case tfhe.FheUint4:
+		resultBz = []byte{byte(value)}
+	case tfhe.FheUint8:
+		resultBz = []byte{byte(value)}
+	case tfhe.FheUint16:
+		resultBz = make([]byte, 2)
+		binary.BigEndian.PutUint16(resultBz, uint16(value))
+	case tfhe.FheUint32:
+		resultBz = make([]byte, 4)
+		binary.BigEndian.PutUint32(resultBz, uint32(value))
+	case tfhe.FheUint64:
+		resultBz = make([]byte, 8)
+		binary.BigEndian.PutUint64(resultBz, value)
+	default:
+		return nil, fmt.Errorf("unsupported FheUintType: %s", typ)
+	}
+
+	return resultBz, nil
 }

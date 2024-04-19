@@ -6,7 +6,6 @@ import (
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/zama-ai/fhevm-go/fhevm/tfhe"
-	"github.com/zama-ai/fhevm-go/sgx"
 	"pgregory.net/rapid"
 )
 
@@ -29,7 +28,7 @@ func TestSgxDecryptRun(t *testing.T) {
 			environment.depth = depth
 			addr := common.Address{}
 			readOnly := false
-			ct, err := importSgxCiphertextToEVM(environment, depth, tc.expected, tc.typ)
+			ct, err := importSgxPlaintextToEVM(environment, depth, tc.expected, tc.typ)
 			if err != nil {
 				t.Fatalf(err.Error())
 			}
@@ -39,20 +38,8 @@ func TestSgxDecryptRun(t *testing.T) {
 			if err != nil {
 				t.Fatalf(err.Error())
 			}
-			res := getVerifiedCiphertextFromEVM(environment, common.BytesToHash(out))
-			if res == nil {
-				t.Fatalf("output ciphertext is not found in verifiedCiphertexts")
-			}
-			sgxPlaintext, err := sgx.Decrypt(res.ciphertext)
-			if err != nil {
-				t.Fatalf(err.Error())
-			}
 
-			if sgxPlaintext.FheUintType != tfhe.FheUint8 {
-				t.Fatalf("incorrect fheUintType, expected=%s, got=%s", tc.typ, sgxPlaintext.FheUintType)
-			}
-
-			result := new(big.Int).SetBytes(sgxPlaintext.Value).Uint64()
+			result := new(big.Int).SetBytes(out).Uint64()
 			if result != tc.expected {
 				t.Fatalf("incorrect result, expected=%d, got=%d", tc.expected, result)
 			}

@@ -79,13 +79,12 @@ func sgxDecryptRun(environment EVMEnvironment, caller common.Address, addr commo
 		logger.Error("sgxDecrypt failed", "err", err)
 		return nil, err
 	}
-
 	plaintext := result.Value
 
 	logger.Info("sgxDecrypt success", "plaintext", plaintext)
 
 	// Always return a 32-byte big-endian integer.
 	ret := make([]byte, 32)
-	copy(ret, plaintext)
+	copy(ret[32-len(plaintext):], plaintext)
 	return ret, nil
 }

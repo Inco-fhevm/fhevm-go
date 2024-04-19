@@ -29,7 +29,7 @@ func TestSgxAddRun(t *testing.T) {
 	}
 	for _, tc := range testcases {
 		t.Run(fmt.Sprintf("sgxAdd with %s", tc.typ), func(t *testing.T) {
-			testSgxArithmetic(t, tc.typ, tc.lhs, tc.rhs, op, signature)
+			sgxArithmeticHelper(t, tc.typ, tc.lhs, tc.rhs, op, signature)
 		})
 	}
 }
@@ -53,7 +53,7 @@ func TestSgxSubRun(t *testing.T) {
 	}
 	for _, tc := range testcases {
 		t.Run(fmt.Sprintf("sgxAdd with %s", tc.typ), func(t *testing.T) {
-			testSgxArithmetic(t, tc.typ, tc.lhs, tc.rhs, op, signature)
+			sgxArithmeticHelper(t, tc.typ, tc.lhs, tc.rhs, op, signature)
 		})
 	}
 }
@@ -77,22 +77,24 @@ func TestSgxMulRun(t *testing.T) {
 	}
 	for _, tc := range testcases {
 		t.Run(fmt.Sprintf("sgxAdd with %s", tc.typ), func(t *testing.T) {
-			testSgxArithmetic(t, tc.typ, tc.lhs, tc.rhs, op, signature)
+			sgxArithmeticHelper(t, tc.typ, tc.lhs, tc.rhs, op, signature)
 		})
 	}
 }
 
-func testSgxArithmetic(t *testing.T, fheUintType tfhe.FheUintType, lhs, rhs uint64, op func(lhs, rhs uint64) uint64, signature string) {
+// sgxArithmeticHelper is a helper function to test SGX arithmetic operations,
+// which are passed into the last argument as a function.
+func sgxArithmeticHelper(t *testing.T, fheUintType tfhe.FheUintType, lhs, rhs uint64, op func(lhs, rhs uint64) uint64, signature string) {
 	depth := 1
 	environment := newTestEVMEnvironment()
 	environment.depth = depth
 	addr := common.Address{}
 	readOnly := false
-	lhsCt, err := importSgxCiphertextToEVM(environment, depth, lhs, fheUintType)
+	lhsCt, err := importSgxPlaintextToEVM(environment, depth, lhs, fheUintType)
 	if err != nil {
 		t.Fatalf(err.Error())
 	}
-	rhsCt, err := importSgxCiphertextToEVM(environment, depth, rhs, fheUintType)
+	rhsCt, err := importSgxPlaintextToEVM(environment, depth, rhs, fheUintType)
 	if err != nil {
 		t.Fatalf(err.Error())
 	}
@@ -123,13 +125,13 @@ func testSgxArithmetic(t *testing.T, fheUintType tfhe.FheUintType, lhs, rhs uint
 	}
 }
 
-func toSgxPlaintext(value uint64, typ tfhe.FheUintType) (sgx.SgxPlaintext, error) {
-	i := new(big.Int).SetUint64(value)
-	return sgx.NewSgxPlaintext(i.Bytes(), typ, common.Address{}), nil
-}
+func importSgxPlaintextToEVM(environment EVMEnvironment, depth int, value uint64, typ tfhe.FheUintType) (tfhe.TfheCiphertext, error) {
+	valueBz, err := marshalUint(value, typ)
+	if err != nil {
+		return tfhe.TfheCiphertext{}, err
+	}
+	sgxPlaintext := sgx.NewSgxPlaintext(valueBz, typ, common.Address{})
 
-func importSgxCiphertextToEVM(environment EVMEnvironment, depth int, value uint64, typ tfhe.FheUintType) (tfhe.TfheCiphertext, error) {
-	sgxPlaintext, err := toSgxPlaintext(value, typ)
 	if err != nil {
 		return tfhe.TfheCiphertext{}, err
 	}
