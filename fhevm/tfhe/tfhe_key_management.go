@@ -97,6 +97,8 @@ func InitGlobalKeysFromFiles(keysDir string) error {
 	if err != nil {
 		return err
 	}
+	// TODO: This is a temporary measure until we remove sync decrypt for FHE operations
+	// ref: https://github.com/Inco-fhevm/fhevm-go/issues/13
 	var cksPath = path.Join(keysDir, "cks")
 	cksBytes, err := os.ReadFile(cksPath)
 	if err != nil {
