@@ -118,7 +118,7 @@ func teeDivRun(environment EVMEnvironment, caller common.Address, addr common.Ad
 
 func teeRemRun(environment EVMEnvironment, caller common.Address, addr common.Address, input []byte, readOnly bool, runSpan trace.Span) ([]byte, error) {
 	return doArithmeticOperation("teeMulRun", environment, caller, input, runSpan, func(a uint64, b uint64) uint64 {
-		return a & b
+		return a % b
 	})
 }
 

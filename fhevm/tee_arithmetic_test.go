@@ -100,7 +100,7 @@ func TestTeeDivRun(t *testing.T) {
 		{tfhe.FheUint64, 13333377777777777, 133377777777},
 	}
 	for _, tc := range testcases {
-		t.Run(fmt.Sprintf("teeMul with %s", tc.typ), func(t *testing.T) {
+		t.Run(fmt.Sprintf("teeDiv with %s", tc.typ), func(t *testing.T) {
 			teeArithmeticHelper(t, tc.typ, tc.lhs, tc.rhs, op, signature)
 		})
 	}
@@ -124,7 +124,7 @@ func TestTeeRemRun(t *testing.T) {
 		{tfhe.FheUint64, 13333377777777777, 133377777777},
 	}
 	for _, tc := range testcases {
-		t.Run(fmt.Sprintf("teeMul with %s", tc.typ), func(t *testing.T) {
+		t.Run(fmt.Sprintf("teeRem with %s", tc.typ), func(t *testing.T) {
 			teeArithmeticHelper(t, tc.typ, tc.lhs, tc.rhs, op, signature)
 		})
 	}
@@ -180,9 +180,6 @@ func importTeePlaintextToEVM(environment EVMEnvironment, depth int, value uint64
 	}
 	teePlaintext := tee.NewTeePlaintext(valueBz, typ, common.Address{})
 
-	if err != nil {
-		return tfhe.TfheCiphertext{}, err
-	}
 	ct, err := tee.Encrypt(teePlaintext)
 	if err != nil {
 		return tfhe.TfheCiphertext{}, err
