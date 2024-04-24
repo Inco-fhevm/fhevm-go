@@ -1,8 +1,12 @@
 package fhevm
 
-import "encoding/hex"
+import (
+	"encoding/hex"
 
-func teeArithmeticGas(op string, environment EVMEnvironment, input []byte) uint64 {
+	"github.com/zama-ai/fhevm-go/fhevm/tfhe"
+)
+
+func teeArithmeticGas(op string, environment EVMEnvironment, input []byte, gasCosts map[tfhe.FheUintType]uint64) uint64 {
 	input = input[:minInt(65, len(input))]
 
 	logger := environment.GetLogger()
@@ -18,36 +22,21 @@ func teeArithmeticGas(op string, environment EVMEnvironment, input []byte) uint6
 		return 0
 	}
 
-	var cost uint64
-
-	switch op {
-	case "teeAddSub":
-		cost = environment.FhevmParams().GasCosts.TeeAddSub[lhs.fheUintType()]
-	case "teeMul":
-		cost = environment.FhevmParams().GasCosts.TeeMul[lhs.fheUintType()]
-	case "teeDiv":
-		cost = environment.FhevmParams().GasCosts.TeeDiv[lhs.fheUintType()]
-	case "teeRem":
-		cost = environment.FhevmParams().GasCosts.TeeRem[lhs.fheUintType()]
-	default:
-		cost = 0
-	}
-
-	return cost
+	return gasCosts[lhs.fheUintType()]
 }
 
 func teeAddSubRequiredGas(environment EVMEnvironment, input []byte) uint64 {
-	return teeArithmeticGas("teeAddSub", environment, input)
+	return teeArithmeticGas("teeAddSub", environment, input, environment.FhevmParams().GasCosts.TeeAddSub)
 }
 
 func teeMulRequiredGas(environment EVMEnvironment, input []byte) uint64 {
-	return teeArithmeticGas("teeMul", environment, input)
+	return teeArithmeticGas("teeMul", environment, input, environment.FhevmParams().GasCosts.TeeMul)
 }
 
 func teeDivRequiredGas(environment EVMEnvironment, input []byte) uint64 {
-	return teeArithmeticGas("teeDiv", environment, input)
+	return teeArithmeticGas("teeDiv", environment, input, environment.FhevmParams().GasCosts.TeeDiv)
 }
 
 func teeRemRequiredGas(environment EVMEnvironment, input []byte) uint64 {
-	return teeArithmeticGas("teeRem", environment, input)
+	return teeArithmeticGas("teeRem", environment, input, environment.FhevmParams().GasCosts.TeeRem)
 }
