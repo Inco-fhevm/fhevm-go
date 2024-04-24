@@ -277,6 +277,18 @@ var fhelibMethods = []*FheLibMethod{
 		runFunction:         teeMulRun,
 	},
 	{
+		name:                "teeDiv",
+		argTypes:            "(uint256,uint256,bytes1)",
+		requiredGasFunction: teeDivRequiredGas,
+		runFunction:         teeDivRun,
+	},
+	{
+		name:                "teeRem",
+		argTypes:            "(uint256,uint256,bytes1)",
+		requiredGasFunction: teeRemRequiredGas,
+		runFunction:         teeRemRun,
+	},
+	{
 		name:                "teeLe",
 		argTypes:            "(uint256,uint256,bytes1)",
 		requiredGasFunction: teeComparisonRequiredGas,
