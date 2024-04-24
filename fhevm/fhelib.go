@@ -325,10 +325,10 @@ var fhelibMethods = []*FheLibMethod{
 		runFunction:         teeMaxRun,
 	},
 	{
-		name:                "teeIfThenElse",
+		name:                "teeCmux",
 		argTypes:            "(uint256,uint256,uint256)",
 		requiredGasFunction: teeComparisonRequiredGas,
-		runFunction:         teeIfThenElseRun,
+		runFunction:         teeCmuxRun,
 	},
 }
 

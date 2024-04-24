@@ -210,7 +210,7 @@ func TestTeeMaxRun(t *testing.T) {
 	}
 }
 
-func TestTeeIfThenElseRun(t *testing.T) {
+func TestTeeCmuxRun(t *testing.T) {
 	op := func(fhs bool, shs, ths uint64) uint64 {
 		if fhs {
 			return shs
@@ -218,7 +218,7 @@ func TestTeeIfThenElseRun(t *testing.T) {
 			return ths
 		}
 	}
-	signature := "teeIfThenElse(uint256,uint256,uint256)"
+	signature := "teeCmux(uint256,uint256,uint256)"
 
 	testcases := []struct {
 		typ tfhe.FheUintType
@@ -233,7 +233,7 @@ func TestTeeIfThenElseRun(t *testing.T) {
 		{tfhe.FheUint64, true, 13333377777777777, 133377777777},
 	}
 	for _, tc := range testcases {
-		t.Run(fmt.Sprintf("teeIfThenElse with %s", tc.typ), func(t *testing.T) {
+		t.Run(fmt.Sprintf("teeCmux with %s", tc.typ), func(t *testing.T) {
 			teeComparison3Helper(t, tc.typ, tc.fhs, tc.shs, tc.ths, op, signature)
 		})
 	}
@@ -367,7 +367,7 @@ func importTeeBoolToEVM(environment EVMEnvironment, depth int, value bool, typ t
 		return tfhe.TfheCiphertext{}, err
 	}
 	teePlaintext := tee.NewTeePlaintext(valueBz, typ, common.Address{})
-	
+
 	ct, err := tee.Encrypt(teePlaintext)
 	if err != nil {
 		return tfhe.TfheCiphertext{}, err

@@ -216,7 +216,7 @@ func teeMaxRun(environment EVMEnvironment, caller common.Address, addr common.Ad
 	})
 }
 
-func teeIfThenElseRun(environment EVMEnvironment, caller common.Address, addr common.Address, input []byte, readOnly bool, runSpan trace.Span) ([]byte, error) {
+func teeCmuxRun(environment EVMEnvironment, caller common.Address, addr common.Address, input []byte, readOnly bool, runSpan trace.Span) ([]byte, error) {
 	return doComparison3Operation("teeIfThenElseRun", environment, caller, input, runSpan, func(f bool, s uint64, t uint64) uint64 {
 		if f {
 			return s
