@@ -276,6 +276,60 @@ var fhelibMethods = []*FheLibMethod{
 		requiredGasFunction: teeMulRequiredGas,
 		runFunction:         teeMulRun,
 	},
+	{
+		name:                "teeLe",
+		argTypes:            "(uint256,uint256,bytes1)",
+		requiredGasFunction: teeComparisonRequiredGas,
+		runFunction:         teeLeRun,
+	},
+	{
+		name:                "teeLt",
+		argTypes:            "(uint256,uint256,bytes1)",
+		requiredGasFunction: teeComparisonRequiredGas,
+		runFunction:         teeLtRun,
+	},
+	{
+		name:                "teeEq",
+		argTypes:            "(uint256,uint256,bytes1)",
+		requiredGasFunction: teeComparisonRequiredGas,
+		runFunction:         teeEqRun,
+	},
+	{
+		name:                "teeGe",
+		argTypes:            "(uint256,uint256,bytes1)",
+		requiredGasFunction: teeComparisonRequiredGas,
+		runFunction:         teeGeRun,
+	},
+	{
+		name:                "teeGt",
+		argTypes:            "(uint256,uint256,bytes1)",
+		requiredGasFunction: teeComparisonRequiredGas,
+		runFunction:         teeGtRun,
+	},
+	{
+		name:                "teeNe",
+		argTypes:            "(uint256,uint256,bytes1)",
+		requiredGasFunction: teeComparisonRequiredGas,
+		runFunction:         teeNeRun,
+	},
+	{
+		name:                "teeMin",
+		argTypes:            "(uint256,uint256,bytes1)",
+		requiredGasFunction: teeComparisonRequiredGas,
+		runFunction:         teeMinRun,
+	},
+	{
+		name:                "teeMax",
+		argTypes:            "(uint256,uint256,bytes1)",
+		requiredGasFunction: teeComparisonRequiredGas,
+		runFunction:         teeMaxRun,
+	},
+	{
+		name:                "teeIfThenElse",
+		argTypes:            "(uint256,uint256,uint256)",
+		requiredGasFunction: teeComparisonRequiredGas,
+		runFunction:         teeIfThenElseRun,
+	},
 }
 
 func init() {
