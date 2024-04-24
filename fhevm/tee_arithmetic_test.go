@@ -82,6 +82,54 @@ func TestTeeMulRun(t *testing.T) {
 	}
 }
 
+func TestTeeDivRun(t *testing.T) {
+	op := func(lhs, rhs uint64) uint64 {
+		return (lhs - lhs % rhs) / rhs
+	}
+	signature := "teeDiv(uint256,uint256,bytes1)"
+
+	testcases := []struct {
+		typ tfhe.FheUintType
+		lhs uint64
+		rhs uint64
+	}{
+		{tfhe.FheUint4, 2, 1},
+		{tfhe.FheUint8, 2, 1},
+		{tfhe.FheUint16, 4283, 1337},
+		{tfhe.FheUint32, 1333337, 1337},
+		{tfhe.FheUint64, 13333377777777777, 133377777777},
+	}
+	for _, tc := range testcases {
+		t.Run(fmt.Sprintf("teeMul with %s", tc.typ), func(t *testing.T) {
+			teeArithmeticHelper(t, tc.typ, tc.lhs, tc.rhs, op, signature)
+		})
+	}
+}
+
+func TestTeeRemRun(t *testing.T) {
+	op := func(lhs, rhs uint64) uint64 {
+		return lhs % rhs
+	}
+	signature := "teeRem(uint256,uint256,bytes1)"
+
+	testcases := []struct {
+		typ tfhe.FheUintType
+		lhs uint64
+		rhs uint64
+	}{
+		{tfhe.FheUint4, 2, 1},
+		{tfhe.FheUint8, 2, 1},
+		{tfhe.FheUint16, 4283, 1337},
+		{tfhe.FheUint32, 1333337, 1337},
+		{tfhe.FheUint64, 13333377777777777, 133377777777},
+	}
+	for _, tc := range testcases {
+		t.Run(fmt.Sprintf("teeMul with %s", tc.typ), func(t *testing.T) {
+			teeArithmeticHelper(t, tc.typ, tc.lhs, tc.rhs, op, signature)
+		})
+	}
+}
+
 // teeArithmeticHelper is a helper function to test TEE arithmetic operations,
 // which are passed into the last argument as a function.
 func teeArithmeticHelper(t *testing.T, fheUintType tfhe.FheUintType, lhs, rhs uint64, op func(lhs, rhs uint64) uint64, signature string) {
