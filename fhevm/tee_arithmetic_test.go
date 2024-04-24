@@ -84,7 +84,7 @@ func TestTeeMulRun(t *testing.T) {
 
 func TestTeeDivRun(t *testing.T) {
 	op := func(lhs, rhs uint64) uint64 {
-		return (lhs - lhs % rhs) / rhs
+		return lhs / rhs
 	}
 	signature := "teeDiv(uint256,uint256,bytes1)"
 
