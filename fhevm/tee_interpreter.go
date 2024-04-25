@@ -133,7 +133,7 @@ func extract3Operands(op string, environment EVMEnvironment, input []byte, runSp
 		logger.Error(fmt.Sprintf("%s failed", op), "err", err)
 		return nil, nil, nil, fhs, shs, ths, err
 	}
-	
+
 	tp, err := tee.Decrypt(ths.ciphertext)
 	if err != nil {
 		logger.Error(fmt.Sprintf("%s failed", op), "err", err)
