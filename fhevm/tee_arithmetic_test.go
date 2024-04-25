@@ -67,7 +67,7 @@ func TestTeeMulRun(t *testing.T) {
 		{tfhe.FheUint8, 2, 3, 6},
 		{tfhe.FheUint16, 169, 5, 845},
 		{tfhe.FheUint32, 137, 17, 2329},
-		{tfhe.FheUint64, 137777, 17, 234209},
+		{tfhe.FheUint64, 137777, 17, 2342209},
 	}
 	for _, tc := range testcases {
 		t.Run(fmt.Sprintf("teeMul with %s", tc.typ), func(t *testing.T) {
