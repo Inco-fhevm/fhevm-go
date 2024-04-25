@@ -13,7 +13,7 @@ import (
 	"go.opentelemetry.io/otel/trace"
 )
 
-func doOperationGenericUint64(op string, environment EVMEnvironment, caller common.Address, input []byte, runSpan trace.Span, operator func(uint64, uint64) uint64) ([]byte, error) {
+func doOperationGeneric[T any](op string, environment EVMEnvironment, caller common.Address, input []byte, runSpan trace.Span, operator func(uint64, uint64) T) ([]byte, error) {
 	logger := environment.GetLogger()
 
 	lp, rp, lhs, rhs, err := extract2Operands(op, environment, input, runSpan)
@@ -43,59 +43,25 @@ func doOperationGenericUint64(op string, environment EVMEnvironment, caller comm
 	r := big.NewInt(0).SetBytes(rp.Value).Uint64()
 
 	result := operator(l, r)
-	resultBz, err := marshalUint(result, lp.FheUintType)
-	if err != nil {
-		return nil, err
+	var resultBz []byte
+	// Type switch to handle different types of T.
+	switch res := any(result).(type) {
+	case uint64:
+		var err error
+		resultBz, err = marshalUint(res, lp.FheUintType) // Marshal uint64 result.
+		if err != nil {
+			return nil, err
+		}
+	case bool:
+		var err error
+		resultBz, err = marshalBool(res) // Marshal bool result.
+		if err != nil {
+			return nil, err
+		}
+	default:
+		return nil, fmt.Errorf("unsupported result type")
 	}
 	teePlaintext := tee.NewTeePlaintext(resultBz, lp.FheUintType, caller)
-
-	resultCt, err := tee.Encrypt(teePlaintext)
-	if err != nil {
-		logger.Error(op, "failed", "err", err)
-		return nil, err
-	}
-	importCiphertext(environment, &resultCt)
-
-	resultHash := resultCt.GetHash()
-	logger.Info(fmt.Sprintf("%s success", op), "lhs", lhs.hash().Hex(), "rhs", rhs.hash().Hex(), "result", resultHash.Hex())
-	return resultHash[:], nil
-}
-
-func doOperationGenericBool(op string, environment EVMEnvironment, caller common.Address, input []byte, runSpan trace.Span, operator func(uint64, uint64) bool) ([]byte, error) {
-	logger := environment.GetLogger()
-
-	lp, rp, lhs, rhs, err := extract2Operands(op, environment, input, runSpan)
-	if err != nil {
-		logger.Error(op, "failed", "err", err)
-		return nil, err
-	}
-
-	// If we are doing gas estimation, skip execution and insert a random ciphertext as a result.
-	if !environment.IsCommitting() && !environment.IsEthCall() {
-		return importRandomCiphertext(environment, lhs.fheUintType()), nil
-	}
-
-	// TODO ref: https://github.com/Inco-fhevm/inco-monorepo/issues/6
-	if lp.FheUintType == tfhe.FheUint128 || lp.FheUintType == tfhe.FheUint160 {
-		panic("TODO implement me")
-	}
-
-	// Using math/big here to make code more readable.
-	// A more efficient way would be to use binary.BigEndian.UintXX().
-	// However, that would require a switch case. We prefer for now to use
-	// big.Int as a one-liner that can handle variable-length bytes.
-	//
-	// Note that we do arithmetic operations on uint64, then we convert th
-	// result back to the FheUintType.
-	l := big.NewInt(0).SetBytes(lp.Value).Uint64()
-	r := big.NewInt(0).SetBytes(rp.Value).Uint64()
-
-	result := operator(l, r)
-	resultBz, err := marshalBool(result)
-	if err != nil {
-		return nil, err
-	}
-	teePlaintext := tee.NewTeePlaintext(resultBz, 0, caller)
 
 	resultCt, err := tee.Encrypt(teePlaintext)
 	if err != nil {
