@@ -186,8 +186,8 @@ func TestTeeMaxRun(t *testing.T) {
 	}
 }
 
-func TestTeeCmuxRun(t *testing.T) {
-	signature := "teeCmux(uint256,uint256,uint256)"
+func TestTeeSelectRun(t *testing.T) {
+	signature := "teeSelect(uint256,uint256,uint256)"
 
 	testcases := []struct {
 		typ      tfhe.FheUintType
@@ -203,7 +203,7 @@ func TestTeeCmuxRun(t *testing.T) {
 		{tfhe.FheUint64, true, 13333377777777777, 133377777777, 13333377777777777},
 	}
 	for _, tc := range testcases {
-		t.Run(fmt.Sprintf("teeCmux with %s", tc.typ), func(t *testing.T) {
+		t.Run(fmt.Sprintf("teeSelect with %s", tc.typ), func(t *testing.T) {
 			teeComparison3Helper(t, tc.typ, tc.fhs, tc.shs, tc.ths, tc.expected, signature)
 		})
 	}

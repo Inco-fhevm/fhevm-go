@@ -66,12 +66,12 @@ func teeMaxRun(environment EVMEnvironment, caller common.Address, addr common.Ad
 	})
 }
 
-func teeCmuxRun(environment EVMEnvironment, caller common.Address, addr common.Address, input []byte, readOnly bool, runSpan trace.Span) ([]byte, error) {
+func teeSelectRun(environment EVMEnvironment, caller common.Address, addr common.Address, input []byte, readOnly bool, runSpan trace.Span) ([]byte, error) {
 	logger := environment.GetLogger()
 
-	fp, sp, tp, fhs, shs, ths, err := extract3Operands("teeCmux", environment, input, runSpan)
+	fp, sp, tp, fhs, shs, ths, err := extract3Operands("teeSelect", environment, input, runSpan)
 	if err != nil {
-		logger.Error("teeCmux", "failed", "err", err)
+		logger.Error("teeSelect", "failed", "err", err)
 		return nil, err
 	}
 
@@ -109,12 +109,12 @@ func teeCmuxRun(environment EVMEnvironment, caller common.Address, addr common.A
 
 	resultCt, err := tee.Encrypt(teePlaintext)
 	if err != nil {
-		logger.Error("teeCmux", "failed", "err", err)
+		logger.Error("teeSelect", "failed", "err", err)
 		return nil, err
 	}
 	importCiphertext(environment, &resultCt)
 
 	resultHash := resultCt.GetHash()
-	logger.Info(fmt.Sprintf("%s success", "teeCmux"), "fhs", fhs.hash().Hex(), "shs", shs.hash().Hex(), "ths", ths.hash().Hex(), "result", resultHash.Hex())
+	logger.Info(fmt.Sprintf("%s success", "teeSelect"), "fhs", fhs.hash().Hex(), "shs", shs.hash().Hex(), "ths", ths.hash().Hex(), "result", resultHash.Hex())
 	return resultHash[:], nil
 }
