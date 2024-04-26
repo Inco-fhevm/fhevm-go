@@ -128,11 +128,11 @@ func teeArithmeticHelper(t *testing.T, fheUintType tfhe.FheUintType, lhs, rhs, e
 	environment.depth = depth
 	addr := common.Address{}
 	readOnly := false
-	lhsCt, err := importTeeToEVM(environment, depth, lhs, fheUintType)
+	lhsCt, err := importTeePlaintextToEVM(environment, depth, lhs, fheUintType)
 	if err != nil {
 		t.Fatalf(err.Error())
 	}
-	rhsCt, err := importTeeToEVM(environment, depth, rhs, fheUintType)
+	rhsCt, err := importTeePlaintextToEVM(environment, depth, rhs, fheUintType)
 	if err != nil {
 		t.Fatalf(err.Error())
 	}

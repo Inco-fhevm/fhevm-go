@@ -217,11 +217,11 @@ func teeComparison1Helper(t *testing.T, fheUintType tfhe.FheUintType, lhs, rhs u
 	environment.depth = depth
 	addr := common.Address{}
 	readOnly := false
-	lhsCt, err := importTeeToEVM(environment, depth, lhs, fheUintType)
+	lhsCt, err := importTeePlaintextToEVM(environment, depth, lhs, fheUintType)
 	if err != nil {
 		t.Fatalf(err.Error())
 	}
-	rhsCt, err := importTeeToEVM(environment, depth, rhs, fheUintType)
+	rhsCt, err := importTeePlaintextToEVM(environment, depth, rhs, fheUintType)
 	if err != nil {
 		t.Fatalf(err.Error())
 	}
@@ -258,11 +258,11 @@ func teeComparison2Helper(t *testing.T, fheUintType tfhe.FheUintType, lhs, rhs, 
 	environment.depth = depth
 	addr := common.Address{}
 	readOnly := false
-	lhsCt, err := importTeeToEVM(environment, depth, lhs, fheUintType)
+	lhsCt, err := importTeePlaintextToEVM(environment, depth, lhs, fheUintType)
 	if err != nil {
 		t.Fatalf(err.Error())
 	}
-	rhsCt, err := importTeeToEVM(environment, depth, rhs, fheUintType)
+	rhsCt, err := importTeePlaintextToEVM(environment, depth, rhs, fheUintType)
 	if err != nil {
 		t.Fatalf(err.Error())
 	}
@@ -294,15 +294,15 @@ func teeComparison3Helper(t *testing.T, fheUintType tfhe.FheUintType, fhs bool, 
 	environment.depth = depth
 	addr := common.Address{}
 	readOnly := false
-	fhsCt, err := importTeeToEVM(environment, depth, fhs, fheUintType)
+	fhsCt, err := importTeePlaintextToEVM(environment, depth, fhs, fheUintType)
 	if err != nil {
 		t.Fatalf(err.Error())
 	}
-	shsCt, err := importTeeToEVM(environment, depth, shs, fheUintType)
+	shsCt, err := importTeePlaintextToEVM(environment, depth, shs, fheUintType)
 	if err != nil {
 		t.Fatalf(err.Error())
 	}
-	thsCt, err := importTeeToEVM(environment, depth, ths, fheUintType)
+	thsCt, err := importTeePlaintextToEVM(environment, depth, ths, fheUintType)
 	if err != nil {
 		t.Fatalf(err.Error())
 	}

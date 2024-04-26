@@ -28,7 +28,7 @@ func TestTeeDecryptRun(t *testing.T) {
 			environment.depth = depth
 			addr := common.Address{}
 			readOnly := false
-			ct, err := importTeeToEVM(environment, depth, tc.expected, tc.typ)
+			ct, err := importTeePlaintextToEVM(environment, depth, tc.expected, tc.typ)
 			if err != nil {
 				t.Fatalf(err.Error())
 			}

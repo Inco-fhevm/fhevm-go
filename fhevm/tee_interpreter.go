@@ -140,56 +140,42 @@ func extract3Operands(op string, environment EVMEnvironment, input []byte, runSp
 
 // marshalTfheType converts a any to a byte slice
 func marshalTfheType(value any, typ tfhe.FheUintType) ([]byte, error) {
-	var resultBz []byte
-
-	switch any(value).(type) {
+	switch value := any(value).(type) {
 	case uint64:
 		switch typ {
 		case tfhe.FheUint4:
-			resultBz = []byte{byte(value.(uint64))}
+			resultBz := []byte{byte(value)}
+			return resultBz, nil
 		case tfhe.FheUint8:
-			resultBz = []byte{byte(value.(uint64))}
+			resultBz := []byte{byte(value)}
+			return resultBz, nil
 		case tfhe.FheUint16:
-			resultBz = make([]byte, 2)
-			binary.BigEndian.PutUint16(resultBz, uint16(value.(uint64)))
+			resultBz := make([]byte, 2)
+			binary.BigEndian.PutUint16(resultBz, uint16(value))
+			return resultBz, nil
 		case tfhe.FheUint32:
-			resultBz = make([]byte, 4)
-			binary.BigEndian.PutUint32(resultBz, uint32(value.(uint64)))
+			resultBz := make([]byte, 4)
+			binary.BigEndian.PutUint32(resultBz, uint32(value))
+			return resultBz, nil
 		case tfhe.FheUint64:
-			resultBz = make([]byte, 8)
-			binary.BigEndian.PutUint64(resultBz, value.(uint64))
+			resultBz := make([]byte, 8)
+			binary.BigEndian.PutUint64(resultBz, value)
+			return resultBz, nil
 		default:
 			return nil, 
 			fmt.Errorf("unsupported FheUintType: %s", typ)
 		}
 	case bool:
-		resultBz = make([]byte, 1)
-		if value.(bool) {
+		resultBz := make([]byte, 1)
+		if value {
 			resultBz[0] = 1
 		} else {
 			resultBz[0] = 0
 		}
+		return resultBz, nil
 	default:
 		return nil,
 		fmt.Errorf("unsupported value type: %s", value)
 	}
-
-	return resultBz, nil
-}
-
-func importTeeToEVM(environment EVMEnvironment, depth int, value any, typ tfhe.FheUintType) (tfhe.TfheCiphertext, error) {
-	valueBz, err := marshalTfheType(value, typ)
-	if err != nil {
-		return tfhe.TfheCiphertext{}, err
-	}
-	teePlaintext := tee.NewTeePlaintext(valueBz, typ, common.Address{})
-
-	ct, err := tee.Encrypt(teePlaintext)
-	if err != nil {
-		return tfhe.TfheCiphertext{}, err
-	}
-
-	importCiphertextToEVMAtDepth(environment, &ct, depth)
-	return ct, nil
 }
 
