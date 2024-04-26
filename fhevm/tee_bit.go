@@ -18,14 +18,14 @@ func teeShrRun(environment EVMEnvironment, caller common.Address, addr common.Ad
 }
 
 func teeRotlRun(environment EVMEnvironment, caller common.Address, addr common.Address, input []byte, readOnly bool, runSpan trace.Span) ([]byte, error) {
-	return doOperationGeneric(environment, caller, input, runSpan, func(a, b any) any {
-		return (a.(uint64) << b.(uint64)) | (a.(uint64) >> (8 - b.(uint64)%8))
+	return doRotOperationGeneric(environment, caller, input, runSpan, func(a, b, typ uint64) uint64 {
+		return (a << b) | (a >> (typ - b%typ))
 	}, "teeRotl")
 }
 
 func teeRotrRun(environment EVMEnvironment, caller common.Address, addr common.Address, input []byte, readOnly bool, runSpan trace.Span) ([]byte, error) {
-	return doOperationGeneric(environment, caller, input, runSpan, func(a, b any) any {
-		return (a.(uint64) >> b.(uint64)) | (a.(uint64) << (8 - b.(uint64)%8))
+	return doRotOperationGeneric(environment, caller, input, runSpan, func(a, b, typ uint64) uint64 {
+		return (a >> b) | (a << (typ - b%typ))
 	}, "teeRotr")
 }
 
@@ -70,11 +70,11 @@ func teeBitXorRun(environment EVMEnvironment, caller common.Address, addr common
 
 func teeNotRun(environment EVMEnvironment, caller common.Address, addr common.Address, input []byte, readOnly bool, runSpan trace.Span) ([]byte, error) {
 	return doNegNotOperationGeneric(environment, caller, input, runSpan, func(a any) any {
-		switch a.(type) {
+		switch a := a.(type) {
 		case uint64:
-			return ^a.(uint64)
+			return ^a
 		case bool:
-			return !a.(bool)
+			return !a
 		default:
 			return nil
 		}
@@ -83,9 +83,9 @@ func teeNotRun(environment EVMEnvironment, caller common.Address, addr common.Ad
 
 func teeNegRun(environment EVMEnvironment, caller common.Address, addr common.Address, input []byte, readOnly bool, runSpan trace.Span) ([]byte, error) {
 	return doNegNotOperationGeneric(environment, caller, input, runSpan, func(a any) any {
-		switch a.(type) {
+		switch a := a.(type) {
 		case uint64:
-			return ^a.(uint64) + 1
+			return ^a + 1
 		default:
 			return nil
 		}
