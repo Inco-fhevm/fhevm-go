@@ -13,12 +13,12 @@ import (
 	"go.opentelemetry.io/otel/trace"
 )
 
-func doOperationGeneric[T any](
-	environment EVMEnvironment, 
-	caller common.Address, 
-	input []byte, 
-	runSpan trace.Span, 
-	operator func(uint64, uint64) T,
+func doOperationGeneric(
+	environment EVMEnvironment,
+	caller common.Address,
+	input []byte,
+	runSpan trace.Span,
+	operator func(a, b any) any,
 	op string) ([]byte, error) {
 	logger := environment.GetLogger()
 
@@ -70,7 +70,85 @@ func doOperationGeneric[T any](
 	return resultHash[:], nil
 }
 
-func extract2Operands(op string, environment EVMEnvironment, input []byte, runSpan trace.Span) (*tee.TeePlaintext, *tee.TeePlaintext, *verifiedCiphertext, *verifiedCiphertext,	error) {
+func doNegNotOperationGeneric(
+	environment EVMEnvironment,
+	caller common.Address,
+	input []byte,
+	runSpan trace.Span,
+	operator func(a any) any,
+	op string) ([]byte, error) {
+	logger := environment.GetLogger()
+
+	cp, ct, err := extract1Operands(op, environment, input, runSpan)
+	if err != nil {
+		logger.Error(op, "failed", "err", err)
+		return nil, err
+	}
+
+	// If we are doing gas estimation, skip execution and insert a random ciphertext as a result.
+	if !environment.IsCommitting() && !environment.IsEthCall() {
+		return importRandomCiphertext(environment, cp.FheUintType), nil
+	}
+
+	// TODO ref: https://github.com/Inco-fhevm/inco-monorepo/issues/6
+	if cp.FheUintType == tfhe.FheUint128 || cp.FheUintType == tfhe.FheUint160 {
+		panic("TODO implement me")
+	}
+
+	// Using math/big here to make code more readable.
+	// A more efficient way would be to use binary.BigEndian.UintXX().
+	// However, that would require a switch case. We prefer for now to use
+	// big.Int as a one-liner that can handle variable-length bytes.
+	//
+	// Note that we do arithmetic operations on uint64, then we convert the
+	// result back to the FheUintType.
+	c := big.NewInt(0).SetBytes(cp.Value).Uint64()
+
+	result := operator(c)
+	var resultBz []byte
+	resultBz, err = marshalTfheType(result, cp.FheUintType)
+	if err != nil {
+		logger.Error(op, "failed", "err", err)
+		return nil, err
+	}
+
+	teePlaintext := tee.NewTeePlaintext(resultBz, cp.FheUintType, caller)
+
+	resultCt, err := tee.Encrypt(teePlaintext)
+	if err != nil {
+		logger.Error(op, "failed", "err", err)
+		return nil, err
+	}
+	importCiphertext(environment, &resultCt)
+
+	resultHash := resultCt.GetHash()
+	logger.Info(fmt.Sprintf("%s success", op), "ct", ct.hash().Hex(), "result", resultHash.Hex())
+	return resultHash[:], nil
+}
+
+func extract1Operands(op string, environment EVMEnvironment, input []byte, runSpan trace.Span) (*tee.TeePlaintext, *verifiedCiphertext, error) {
+	input = input[:minInt(32, len(input))]
+
+	logger := environment.GetLogger()
+
+	ct := getVerifiedCiphertext(environment, common.BytesToHash(input[0:32]))
+	if ct == nil {
+		msg := "fheNeg input not verified"
+		logger.Error(msg, msg, "input", hex.EncodeToString(input))
+		return nil, nil, errors.New(msg)
+	}
+	otelDescribeOperandsFheTypes(runSpan, ct.fheUintType())
+
+	cp, err := tee.Decrypt(ct.ciphertext)
+	if err != nil {
+		logger.Error(fmt.Sprintf("%s failed", op), "err", err)
+		return nil, ct, err
+	}
+
+	return &cp, ct, nil
+}
+
+func extract2Operands(op string, environment EVMEnvironment, input []byte, runSpan trace.Span) (*tee.TeePlaintext, *tee.TeePlaintext, *verifiedCiphertext, *verifiedCiphertext, error) {
 	input = input[:minInt(65, len(input))]
 
 	logger := environment.GetLogger()
@@ -162,8 +240,8 @@ func marshalTfheType(value any, typ tfhe.FheUintType) ([]byte, error) {
 			binary.BigEndian.PutUint64(resultBz, value)
 			return resultBz, nil
 		default:
-			return nil, 
-			fmt.Errorf("unsupported FheUintType: %s", typ)
+			return nil,
+				fmt.Errorf("unsupported FheUintType: %s", typ)
 		}
 	case bool:
 		resultBz := make([]byte, 1)
@@ -175,7 +253,6 @@ func marshalTfheType(value any, typ tfhe.FheUintType) ([]byte, error) {
 		return resultBz, nil
 	default:
 		return nil,
-		fmt.Errorf("unsupported value type: %s", value)
+			fmt.Errorf("unsupported value type: %s", value)
 	}
 }
-

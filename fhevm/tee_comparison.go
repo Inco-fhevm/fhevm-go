@@ -11,44 +11,44 @@ import (
 )
 
 func teeLeRun(environment EVMEnvironment, caller common.Address, addr common.Address, input []byte, readOnly bool, runSpan trace.Span) ([]byte, error) {
-	return doOperationGeneric(environment, caller, input, runSpan, func(a uint64, b uint64) bool {
-		return a <= b
+	return doOperationGeneric(environment, caller, input, runSpan, func(a, b any) any {
+		return a.(uint64) <= b.(uint64)
 	}, "teeLeRun")
 }
 
 func teeLtRun(environment EVMEnvironment, caller common.Address, addr common.Address, input []byte, readOnly bool, runSpan trace.Span) ([]byte, error) {
-	return doOperationGeneric(environment, caller, input, runSpan, func(a uint64, b uint64) bool {
-		return a < b
+	return doOperationGeneric(environment, caller, input, runSpan, func(a, b any) any {
+		return a.(uint64) < b.(uint64)
 	}, "teeLtRun")
 }
 
 func teeEqRun(environment EVMEnvironment, caller common.Address, addr common.Address, input []byte, readOnly bool, runSpan trace.Span) ([]byte, error) {
-	return doOperationGeneric(environment, caller, input, runSpan, func(a uint64, b uint64) bool {
-		return a == b
+	return doOperationGeneric(environment, caller, input, runSpan, func(a, b any) any {
+		return a.(uint64) == b.(uint64)
 	}, "teeEqRun")
 }
 
 func teeGeRun(environment EVMEnvironment, caller common.Address, addr common.Address, input []byte, readOnly bool, runSpan trace.Span) ([]byte, error) {
-	return doOperationGeneric(environment, caller, input, runSpan, func(a uint64, b uint64) bool {
-		return a >= b
+	return doOperationGeneric(environment, caller, input, runSpan, func(a, b any) any {
+		return a.(uint64) >= b.(uint64)
 	}, "teeGeRun")
 }
 
 func teeGtRun(environment EVMEnvironment, caller common.Address, addr common.Address, input []byte, readOnly bool, runSpan trace.Span) ([]byte, error) {
-	return doOperationGeneric(environment, caller, input, runSpan, func(a uint64, b uint64) bool {
-		return a > b
+	return doOperationGeneric(environment, caller, input, runSpan, func(a, b any) any {
+		return a.(uint64) > b.(uint64)
 	}, "teeGtRun")
 }
 
 func teeNeRun(environment EVMEnvironment, caller common.Address, addr common.Address, input []byte, readOnly bool, runSpan trace.Span) ([]byte, error) {
-	return doOperationGeneric(environment, caller, input, runSpan, func(a uint64, b uint64) bool {
-		return a != b
+	return doOperationGeneric(environment, caller, input, runSpan, func(a, b any) any {
+		return a.(uint64) != b.(uint64)
 	}, "teeNeRun")
 }
 
 func teeMinRun(environment EVMEnvironment, caller common.Address, addr common.Address, input []byte, readOnly bool, runSpan trace.Span) ([]byte, error) {
-	return doOperationGeneric(environment, caller, input, runSpan, func(a uint64, b uint64) uint64 {
-		if a >= b {
+	return doOperationGeneric(environment, caller, input, runSpan, func(a, b any) any {
+		if a.(uint64) >= b.(uint64) {
 			return b
 		} else {
 			return a
@@ -57,8 +57,8 @@ func teeMinRun(environment EVMEnvironment, caller common.Address, addr common.Ad
 }
 
 func teeMaxRun(environment EVMEnvironment, caller common.Address, addr common.Address, input []byte, readOnly bool, runSpan trace.Span) ([]byte, error) {
-	return doOperationGeneric(environment, caller, input, runSpan, func(a uint64, b uint64) uint64 {
-		if a >= b {
+	return doOperationGeneric(environment, caller, input, runSpan, func(a, b any) any {
+		if a.(uint64) >= b.(uint64) {
 			return a
 		} else {
 			return b
