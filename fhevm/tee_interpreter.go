@@ -13,7 +13,13 @@ import (
 	"go.opentelemetry.io/otel/trace"
 )
 
-func doOperationGeneric[T any](op string, environment EVMEnvironment, caller common.Address, input []byte, runSpan trace.Span, operator func(uint64, uint64) T) ([]byte, error) {
+func doOperationGeneric[T any](
+	environment EVMEnvironment, 
+	caller common.Address, 
+	input []byte, 
+	runSpan trace.Span, 
+	operator func(uint64, uint64) T,
+	op string) ([]byte, error) {
 	logger := environment.GetLogger()
 
 	lp, rp, lhs, rhs, err := extract2Operands(op, environment, input, runSpan)
@@ -44,23 +50,12 @@ func doOperationGeneric[T any](op string, environment EVMEnvironment, caller com
 
 	result := operator(l, r)
 	var resultBz []byte
-	// Type switch to handle different types of T.
-	switch res := any(result).(type) {
-	case uint64:
-		var err error
-		resultBz, err = marshalUint(res, lp.FheUintType) // Marshal uint64 result.
-		if err != nil {
-			return nil, err
-		}
-	case bool:
-		var err error
-		resultBz, err = marshalBool(res) // Marshal bool result.
-		if err != nil {
-			return nil, err
-		}
-	default:
-		return nil, fmt.Errorf("unsupported result type")
+	resultBz, err = marshalTfheType(result, lp.FheUintType)
+	if err != nil {
+		logger.Error(op, "failed", "err", err)
+		return nil, err
 	}
+
 	teePlaintext := tee.NewTeePlaintext(resultBz, lp.FheUintType, caller)
 
 	resultCt, err := tee.Encrypt(teePlaintext)
@@ -75,7 +70,7 @@ func doOperationGeneric[T any](op string, environment EVMEnvironment, caller com
 	return resultHash[:], nil
 }
 
-func extract2Operands(op string, environment EVMEnvironment, input []byte, runSpan trace.Span) (*tee.TeePlaintext, *tee.TeePlaintext, *verifiedCiphertext, *verifiedCiphertext, error) {
+func extract2Operands(op string, environment EVMEnvironment, input []byte, runSpan trace.Span) (*tee.TeePlaintext, *tee.TeePlaintext, *verifiedCiphertext, *verifiedCiphertext,	error) {
 	input = input[:minInt(65, len(input))]
 
 	logger := environment.GetLogger()
@@ -143,39 +138,58 @@ func extract3Operands(op string, environment EVMEnvironment, input []byte, runSp
 	return &fp, &sp, &tp, fhs, shs, ths, nil
 }
 
-// marshalUint converts a uint64 to a byte slice whose length is based on the FheUintType.
-func marshalUint(value uint64, typ tfhe.FheUintType) ([]byte, error) {
+// marshalTfheType converts a any to a byte slice
+func marshalTfheType(value any, typ tfhe.FheUintType) ([]byte, error) {
 	var resultBz []byte
 
-	switch typ {
-	case tfhe.FheUint4:
-		resultBz = []byte{byte(value)}
-	case tfhe.FheUint8:
-		resultBz = []byte{byte(value)}
-	case tfhe.FheUint16:
-		resultBz = make([]byte, 2)
-		binary.BigEndian.PutUint16(resultBz, uint16(value))
-	case tfhe.FheUint32:
-		resultBz = make([]byte, 4)
-		binary.BigEndian.PutUint32(resultBz, uint32(value))
-	case tfhe.FheUint64:
-		resultBz = make([]byte, 8)
-		binary.BigEndian.PutUint64(resultBz, value)
+	switch any(value).(type) {
+	case uint64:
+		switch typ {
+		case tfhe.FheUint4:
+			resultBz = []byte{byte(value.(uint64))}
+		case tfhe.FheUint8:
+			resultBz = []byte{byte(value.(uint64))}
+		case tfhe.FheUint16:
+			resultBz = make([]byte, 2)
+			binary.BigEndian.PutUint16(resultBz, uint16(value.(uint64)))
+		case tfhe.FheUint32:
+			resultBz = make([]byte, 4)
+			binary.BigEndian.PutUint32(resultBz, uint32(value.(uint64)))
+		case tfhe.FheUint64:
+			resultBz = make([]byte, 8)
+			binary.BigEndian.PutUint64(resultBz, value.(uint64))
+		default:
+			return nil, 
+			fmt.Errorf("unsupported FheUintType: %s", typ)
+		}
+	case bool:
+		resultBz = make([]byte, 1)
+		if value.(bool) {
+			resultBz[0] = 1
+		} else {
+			resultBz[0] = 0
+		}
 	default:
-		return nil, fmt.Errorf("unsupported FheUintType: %s", typ)
+		return nil,
+		fmt.Errorf("unsupported value type: %s", value)
 	}
 
 	return resultBz, nil
 }
 
-// marshalBool converts a bool to a byte slice
-func marshalBool(value bool) ([]byte, error) {
-	var resultBz = make([]byte, 1)
-	if value {
-		resultBz[0] = 1
-	} else {
-		resultBz[0] = 0
+func importTeeToEVM(environment EVMEnvironment, depth int, value any, typ tfhe.FheUintType) (tfhe.TfheCiphertext, error) {
+	valueBz, err := marshalTfheType(value, typ)
+	if err != nil {
+		return tfhe.TfheCiphertext{}, err
+	}
+	teePlaintext := tee.NewTeePlaintext(valueBz, typ, common.Address{})
+
+	ct, err := tee.Encrypt(teePlaintext)
+	if err != nil {
+		return tfhe.TfheCiphertext{}, err
 	}
 
-	return resultBz, nil
+	importCiphertextToEVMAtDepth(environment, &ct, depth)
+	return ct, nil
 }
+

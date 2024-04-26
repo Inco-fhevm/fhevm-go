@@ -128,11 +128,11 @@ func teeArithmeticHelper(t *testing.T, fheUintType tfhe.FheUintType, lhs, rhs, e
 	environment.depth = depth
 	addr := common.Address{}
 	readOnly := false
-	lhsCt, err := importTeePlaintextToEVM(environment, depth, lhs, fheUintType)
+	lhsCt, err := importTeeToEVM(environment, depth, lhs, fheUintType)
 	if err != nil {
 		t.Fatalf(err.Error())
 	}
-	rhsCt, err := importTeePlaintextToEVM(environment, depth, rhs, fheUintType)
+	rhsCt, err := importTeeToEVM(environment, depth, rhs, fheUintType)
 	if err != nil {
 		t.Fatalf(err.Error())
 	}
@@ -160,20 +160,4 @@ func teeArithmeticHelper(t *testing.T, fheUintType tfhe.FheUintType, lhs, rhs, e
 	if result != expected {
 		t.Fatalf("incorrect result, expected=%d, got=%d", expected, result)
 	}
-}
-
-func importTeePlaintextToEVM(environment EVMEnvironment, depth int, value uint64, typ tfhe.FheUintType) (tfhe.TfheCiphertext, error) {
-	valueBz, err := marshalUint(value, typ)
-	if err != nil {
-		return tfhe.TfheCiphertext{}, err
-	}
-	teePlaintext := tee.NewTeePlaintext(valueBz, typ, common.Address{})
-
-	ct, err := tee.Encrypt(teePlaintext)
-	if err != nil {
-		return tfhe.TfheCiphertext{}, err
-	}
-
-	importCiphertextToEVMAtDepth(environment, &ct, depth)
-	return ct, nil
 }

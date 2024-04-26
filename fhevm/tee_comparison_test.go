@@ -217,11 +217,11 @@ func teeComparison1Helper(t *testing.T, fheUintType tfhe.FheUintType, lhs, rhs u
 	environment.depth = depth
 	addr := common.Address{}
 	readOnly := false
-	lhsCt, err := importTeePlaintextToEVM(environment, depth, lhs, fheUintType)
+	lhsCt, err := importTeeToEVM(environment, depth, lhs, fheUintType)
 	if err != nil {
 		t.Fatalf(err.Error())
 	}
-	rhsCt, err := importTeePlaintextToEVM(environment, depth, rhs, fheUintType)
+	rhsCt, err := importTeeToEVM(environment, depth, rhs, fheUintType)
 	if err != nil {
 		t.Fatalf(err.Error())
 	}
@@ -258,11 +258,11 @@ func teeComparison2Helper(t *testing.T, fheUintType tfhe.FheUintType, lhs, rhs, 
 	environment.depth = depth
 	addr := common.Address{}
 	readOnly := false
-	lhsCt, err := importTeePlaintextToEVM(environment, depth, lhs, fheUintType)
+	lhsCt, err := importTeeToEVM(environment, depth, lhs, fheUintType)
 	if err != nil {
 		t.Fatalf(err.Error())
 	}
-	rhsCt, err := importTeePlaintextToEVM(environment, depth, rhs, fheUintType)
+	rhsCt, err := importTeeToEVM(environment, depth, rhs, fheUintType)
 	if err != nil {
 		t.Fatalf(err.Error())
 	}
@@ -294,15 +294,15 @@ func teeComparison3Helper(t *testing.T, fheUintType tfhe.FheUintType, fhs bool, 
 	environment.depth = depth
 	addr := common.Address{}
 	readOnly := false
-	fhsCt, err := importTeeBoolToEVM(environment, depth, fhs, fheUintType)
+	fhsCt, err := importTeeToEVM(environment, depth, fhs, fheUintType)
 	if err != nil {
 		t.Fatalf(err.Error())
 	}
-	shsCt, err := importTeePlaintextToEVM(environment, depth, shs, fheUintType)
+	shsCt, err := importTeeToEVM(environment, depth, shs, fheUintType)
 	if err != nil {
 		t.Fatalf(err.Error())
 	}
-	thsCt, err := importTeePlaintextToEVM(environment, depth, ths, fheUintType)
+	thsCt, err := importTeeToEVM(environment, depth, ths, fheUintType)
 	if err != nil {
 		t.Fatalf(err.Error())
 	}
@@ -328,18 +328,3 @@ func teeComparison3Helper(t *testing.T, fheUintType tfhe.FheUintType, fhs bool, 
 	}
 }
 
-func importTeeBoolToEVM(environment EVMEnvironment, depth int, value bool, typ tfhe.FheUintType) (tfhe.TfheCiphertext, error) {
-	valueBz, err := marshalBool(value)
-	if err != nil {
-		return tfhe.TfheCiphertext{}, err
-	}
-	teePlaintext := tee.NewTeePlaintext(valueBz, typ, common.Address{})
-
-	ct, err := tee.Encrypt(teePlaintext)
-	if err != nil {
-		return tfhe.TfheCiphertext{}, err
-	}
-
-	importCiphertextToEVMAtDepth(environment, &ct, depth)
-	return ct, nil
-}
