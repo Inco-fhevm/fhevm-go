@@ -70,7 +70,7 @@ func doOperationGeneric(
 	return resultHash[:], nil
 }
 
-func doRotOperationGeneric(
+func doShiftOperationGeneric(
 	environment EVMEnvironment,
 	caller common.Address,
 	input []byte,
@@ -278,6 +278,10 @@ func marshalTfheType(value any, typ tfhe.FheUintType) ([]byte, error) {
 	switch value := any(value).(type) {
 	case uint64:
 		switch typ {
+		case tfhe.FheBool:
+			resultBz := make([]byte, 1)
+			resultBz[0] = byte(value)
+			return resultBz, nil
 		case tfhe.FheUint4:
 			resultBz := []byte{byte(value)}
 			return resultBz, nil

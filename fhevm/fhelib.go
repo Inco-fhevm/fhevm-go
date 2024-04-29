@@ -367,18 +367,6 @@ var fhelibMethods = []*FheLibMethod{
 		runFunction:         teeRotrRun,
 	},
 	{
-		name:                "teeNeg",
-		argTypes:            "(uint256)",
-		requiredGasFunction: teeNegRequiredGas,
-		runFunction:         teeNegRun,
-	},
-	{
-		name:                "teeNot",
-		argTypes:            "(uint256)",
-		requiredGasFunction: teeNotRequiredGas,
-		runFunction:         teeNotRun,
-	},
-	{
 		name:                "teeBitAnd",
 		argTypes:            "(uint256,uint256,bytes1)",
 		requiredGasFunction: teeBitwiseOpRequiredGas,
@@ -395,6 +383,18 @@ var fhelibMethods = []*FheLibMethod{
 		argTypes:            "(uint256,uint256,bytes1)",
 		requiredGasFunction: teeBitwiseOpRequiredGas,
 		runFunction:         teeBitXorRun,
+	},
+	{
+		name:                "teeNeg",
+		argTypes:            "(uint256)",
+		requiredGasFunction: teeNegRequiredGas,
+		runFunction:         teeNegRun,
+	},
+	{
+		name:                "teeNot",
+		argTypes:            "(uint256)",
+		requiredGasFunction: teeNotRequiredGas,
+		runFunction:         teeNotRun,
 	},
 }
 
