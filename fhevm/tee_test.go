@@ -11,7 +11,7 @@ import (
 
 // teeOperationHelper is a helper function to test TEE operations,
 // which are passed into the last argument as a function.
-func teeOperationHelper(t *testing.T, fheUintType tfhe.FheUintType, lhs, rhs, expected any, signature string) {
+func teeOperationHelper(t *testing.T, fheUintType tfhe.FheUintType, lhs, rhs, expected uint64, signature string) {
 	depth := 1
 	environment := newTestEVMEnvironment()
 	environment.depth = depth
@@ -44,22 +44,9 @@ func teeOperationHelper(t *testing.T, fheUintType tfhe.FheUintType, lhs, rhs, ex
 		t.Fatalf("incorrect fheUintType, expected=%s, got=%s", fheUintType, teePlaintext.FheUintType)
 	}
 
-	switch expected := expected.(type) {
-	case uint64:
-		result := new(big.Int).SetBytes(teePlaintext.Value).Uint64()
-		if result != expected {
-			t.Fatalf("incorrect result, expected=%d, got=%d", expected, result)
-		}
-	case bool:
-		var result bool
-		if teePlaintext.Value[0] == 1 {
-			result = true
-		} else {
-			result = false
-		}
-		if result != expected {
-			t.Fatalf("incorrect result, expected=%t, got=%t", expected, result)
-		}
+	result := new(big.Int).SetBytes(teePlaintext.Value).Uint64()
+	if result != expected {
+		t.Fatalf("incorrect result, expected=%d, got=%d", expected, result)
 	}
 }
 
@@ -71,7 +58,7 @@ func teeSelectHelper(t *testing.T, fheUintType tfhe.FheUintType, fhs bool, shs, 
 	environment.depth = depth
 	addr := common.Address{}
 	readOnly := false
-	fhsCt, err := importTeePlaintextToEVM(environment, depth, fhs, fheUintType)
+	fhsCt, err := importTeePlaintextToEVM(environment, depth, boolToUint64(fhs), fheUintType)
 	if err != nil {
 		t.Fatalf(err.Error())
 	}
@@ -107,7 +94,7 @@ func teeSelectHelper(t *testing.T, fheUintType tfhe.FheUintType, fhs bool, shs, 
 
 // teeNotNegHelper is a helper function to test TEE operations,
 // which are passed into the last argument as a function.
-func teeNegNotHelper(t *testing.T, fheUintType tfhe.FheUintType, chs, expected any, signature string) {
+func teeNegNotHelper(t *testing.T, fheUintType tfhe.FheUintType, chs, expected uint64, signature string) {
 	depth := 1
 	environment := newTestEVMEnvironment()
 	environment.depth = depth
@@ -136,26 +123,13 @@ func teeNegNotHelper(t *testing.T, fheUintType tfhe.FheUintType, chs, expected a
 		t.Fatalf("incorrect fheUintType, expected=%s, got=%s", fheUintType, teePlaintext.FheUintType)
 	}
 
-	switch expected := expected.(type) {
-	case uint64:
-		result := new(big.Int).SetBytes(teePlaintext.Value).Uint64()
-		if result != expected {
-			t.Fatalf("incorrect result, expected=%d, got=%d", expected, result)
-		}
-	case bool:
-		var result bool
-		if teePlaintext.Value[0] == 1 {
-			result = true
-		} else {
-			result = false
-		}
-		if result != expected {
-			t.Fatalf("incorrect result, expected=%t, got=%t", expected, result)
-		}
+	result := new(big.Int).SetBytes(teePlaintext.Value).Uint64()
+	if result != expected {
+		t.Fatalf("incorrect result, expected=%d, got=%d", expected, result)
 	}
 }
 
-func importTeePlaintextToEVM(environment EVMEnvironment, depth int, value any, typ tfhe.FheUintType) (tfhe.TfheCiphertext, error) {
+func importTeePlaintextToEVM(environment EVMEnvironment, depth int, value uint64, typ tfhe.FheUintType) (tfhe.TfheCiphertext, error) {
 	valueBz, err := marshalTfheType(value, typ)
 	if err != nil {
 		return tfhe.TfheCiphertext{}, err

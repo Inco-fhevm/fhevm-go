@@ -13,12 +13,13 @@ import (
 	"go.opentelemetry.io/otel/trace"
 )
 
+// doOperationGeneric is a generic function to do TEE operations
 func doOperationGeneric(
 	environment EVMEnvironment,
 	caller common.Address,
 	input []byte,
 	runSpan trace.Span,
-	operator func(a, b any) any,
+	operator func(a, b uint64) uint64,
 	op string) ([]byte, error) {
 	logger := environment.GetLogger()
 
@@ -70,12 +71,13 @@ func doOperationGeneric(
 	return resultHash[:], nil
 }
 
+// doShiftOperationGeneric is a generic function to do TEE bit shift operations
 func doShiftOperationGeneric(
 	environment EVMEnvironment,
 	caller common.Address,
 	input []byte,
 	runSpan trace.Span,
-	operator func(a, b, typ uint64) uint64,
+	operator func(a, b uint64, typ tfhe.FheUintType) uint64,
 	op string) ([]byte, error) {
 	logger := environment.GetLogger()
 
@@ -105,7 +107,7 @@ func doShiftOperationGeneric(
 	l := big.NewInt(0).SetBytes(lp.Value).Uint64()
 	r := big.NewInt(0).SetBytes(rp.Value).Uint64()
 
-	result := operator(l, r, uint64(lp.FheUintType))
+	result := operator(l, r, lp.FheUintType)
 	var resultBz []byte
 	resultBz, err = marshalTfheType(result, lp.FheUintType)
 	if err != nil {
@@ -127,12 +129,13 @@ func doShiftOperationGeneric(
 	return resultHash[:], nil
 }
 
+// doShiftOperationGeneric is a generic function to do TEE bit inverse operations
 func doNegNotOperationGeneric(
 	environment EVMEnvironment,
 	caller common.Address,
 	input []byte,
 	runSpan trace.Span,
-	operator func(a any) any,
+	operator func(a uint64) uint64,
 	op string) ([]byte, error) {
 	logger := environment.GetLogger()
 
@@ -274,46 +277,39 @@ func extract3Operands(op string, environment EVMEnvironment, input []byte, runSp
 }
 
 // marshalTfheType converts a any to a byte slice
-func marshalTfheType(value any, typ tfhe.FheUintType) ([]byte, error) {
-	switch value := any(value).(type) {
-	case uint64:
-		switch typ {
-		case tfhe.FheBool:
-			resultBz := make([]byte, 1)
-			resultBz[0] = byte(value)
-			return resultBz, nil
-		case tfhe.FheUint4:
-			resultBz := []byte{byte(value)}
-			return resultBz, nil
-		case tfhe.FheUint8:
-			resultBz := []byte{byte(value)}
-			return resultBz, nil
-		case tfhe.FheUint16:
-			resultBz := make([]byte, 2)
-			binary.BigEndian.PutUint16(resultBz, uint16(value))
-			return resultBz, nil
-		case tfhe.FheUint32:
-			resultBz := make([]byte, 4)
-			binary.BigEndian.PutUint32(resultBz, uint32(value))
-			return resultBz, nil
-		case tfhe.FheUint64:
-			resultBz := make([]byte, 8)
-			binary.BigEndian.PutUint64(resultBz, value)
-			return resultBz, nil
-		default:
-			return nil,
-				fmt.Errorf("unsupported FheUintType: %s", typ)
-		}
-	case bool:
+func marshalTfheType(value uint64, typ tfhe.FheUintType) ([]byte, error) {
+	switch typ {
+	case tfhe.FheBool:
 		resultBz := make([]byte, 1)
-		if value {
-			resultBz[0] = 1
-		} else {
-			resultBz[0] = 0
-		}
+		resultBz[0] = byte(value)
+		return resultBz, nil
+	case tfhe.FheUint4:
+		resultBz := []byte{byte(value)}
+		return resultBz, nil
+	case tfhe.FheUint8:
+		resultBz := []byte{byte(value)}
+		return resultBz, nil
+	case tfhe.FheUint16:
+		resultBz := make([]byte, 2)
+		binary.BigEndian.PutUint16(resultBz, uint16(value))
+		return resultBz, nil
+	case tfhe.FheUint32:
+		resultBz := make([]byte, 4)
+		binary.BigEndian.PutUint32(resultBz, uint32(value))
+		return resultBz, nil
+	case tfhe.FheUint64:
+		resultBz := make([]byte, 8)
+		binary.BigEndian.PutUint64(resultBz, value)
 		return resultBz, nil
 	default:
 		return nil,
-			fmt.Errorf("unsupported value type: %s", value)
+			fmt.Errorf("unsupported FheUintType: %s", typ)
 	}
+}
+
+func boolToUint64(b bool) uint64 {
+	if b {
+		return 1 // true converts to 1
+	}
+	return 0 // false converts to 0
 }

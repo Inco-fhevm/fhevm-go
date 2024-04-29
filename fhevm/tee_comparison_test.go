@@ -14,13 +14,13 @@ func TestTeeLeRun(t *testing.T) {
 		typ      tfhe.FheUintType
 		lhs      uint64
 		rhs      uint64
-		expected bool
+		expected uint64
 	}{
-		{tfhe.FheUint4, 2, 1, false},
-		{tfhe.FheUint8, 2, 1, false},
-		{tfhe.FheUint16, 4283, 1337, false},
-		{tfhe.FheUint32, 1333337, 1337, false},
-		{tfhe.FheUint64, 13333377777777777, 133377777777, false},
+		{tfhe.FheUint4, 2, 1, 0},
+		{tfhe.FheUint8, 2, 1, 0},
+		{tfhe.FheUint16, 4283, 1337, 0},
+		{tfhe.FheUint32, 1333337, 1337, 0},
+		{tfhe.FheUint64, 13333377777777777, 133377777777, 0},
 	}
 	for _, tc := range testcases {
 		t.Run(fmt.Sprintf("teeLe with %s", tc.typ), func(t *testing.T) {
@@ -36,13 +36,13 @@ func TestTeeLtRun(t *testing.T) {
 		typ      tfhe.FheUintType
 		lhs      uint64
 		rhs      uint64
-		expected bool
+		expected uint64
 	}{
-		{tfhe.FheUint4, 2, 1, false},
-		{tfhe.FheUint8, 2, 1, false},
-		{tfhe.FheUint16, 4283, 1337, false},
-		{tfhe.FheUint32, 1333337, 1337, false},
-		{tfhe.FheUint64, 13333377777777777, 133377777777, false},
+		{tfhe.FheUint4, 2, 1, 0},
+		{tfhe.FheUint8, 2, 1, 0},
+		{tfhe.FheUint16, 4283, 1337, 0},
+		{tfhe.FheUint32, 1333337, 1337, 0},
+		{tfhe.FheUint64, 13333377777777777, 133377777777, 0},
 	}
 	for _, tc := range testcases {
 		t.Run(fmt.Sprintf("teeLt with %s", tc.typ), func(t *testing.T) {
@@ -58,13 +58,13 @@ func TestTeeEqRun(t *testing.T) {
 		typ      tfhe.FheUintType
 		lhs      uint64
 		rhs      uint64
-		expected bool
+		expected uint64
 	}{
-		{tfhe.FheUint4, 2, 1, false},
-		{tfhe.FheUint8, 2, 1, false},
-		{tfhe.FheUint16, 4283, 1337, false},
-		{tfhe.FheUint32, 1333337, 1337, false},
-		{tfhe.FheUint64, 13333377777777777, 133377777777, false},
+		{tfhe.FheUint4, 2, 1, 0},
+		{tfhe.FheUint8, 2, 1, 0},
+		{tfhe.FheUint16, 4283, 1337, 0},
+		{tfhe.FheUint32, 1333337, 1337, 0},
+		{tfhe.FheUint64, 13333377777777777, 133377777777, 0},
 	}
 	for _, tc := range testcases {
 		t.Run(fmt.Sprintf("teeEq with %s", tc.typ), func(t *testing.T) {
@@ -80,13 +80,13 @@ func TestTeeGeRun(t *testing.T) {
 		typ      tfhe.FheUintType
 		lhs      uint64
 		rhs      uint64
-		expected bool
+		expected uint64
 	}{
-		{tfhe.FheUint4, 2, 1, true},
-		{tfhe.FheUint8, 2, 1, true},
-		{tfhe.FheUint16, 4283, 1337, true},
-		{tfhe.FheUint32, 1333337, 1337, true},
-		{tfhe.FheUint64, 13333377777777777, 133377777777, true},
+		{tfhe.FheUint4, 2, 1, 1},
+		{tfhe.FheUint8, 2, 1, 1},
+		{tfhe.FheUint16, 4283, 1337, 1},
+		{tfhe.FheUint32, 1333337, 1337, 1},
+		{tfhe.FheUint64, 13333377777777777, 133377777777, 1},
 	}
 	for _, tc := range testcases {
 		t.Run(fmt.Sprintf("teeGe with %s", tc.typ), func(t *testing.T) {
@@ -102,13 +102,13 @@ func TestTeeGtRun(t *testing.T) {
 		typ      tfhe.FheUintType
 		lhs      uint64
 		rhs      uint64
-		expected bool
+		expected uint64
 	}{
-		{tfhe.FheUint4, 2, 1, true},
-		{tfhe.FheUint8, 2, 1, true},
-		{tfhe.FheUint16, 4283, 1337, true},
-		{tfhe.FheUint32, 1333337, 1337, true},
-		{tfhe.FheUint64, 13333377777777777, 133377777777, true},
+		{tfhe.FheUint4, 2, 1, 1},
+		{tfhe.FheUint8, 2, 1, 1},
+		{tfhe.FheUint16, 4283, 1337, 1},
+		{tfhe.FheUint32, 1333337, 1337, 1},
+		{tfhe.FheUint64, 13333377777777777, 133377777777, 1},
 	}
 	for _, tc := range testcases {
 		t.Run(fmt.Sprintf("teeGt with %s", tc.typ), func(t *testing.T) {
@@ -124,13 +124,13 @@ func TestTeeNeRun(t *testing.T) {
 		typ      tfhe.FheUintType
 		lhs      uint64
 		rhs      uint64
-		expected bool
+		expected uint64
 	}{
-		{tfhe.FheUint4, 2, 1, true},
-		{tfhe.FheUint8, 2, 1, true},
-		{tfhe.FheUint16, 4283, 1337, true},
-		{tfhe.FheUint32, 1333337, 1337, true},
-		{tfhe.FheUint64, 13333377777777777, 133377777777, true},
+		{tfhe.FheUint4, 2, 1, 1},
+		{tfhe.FheUint8, 2, 1, 1},
+		{tfhe.FheUint16, 4283, 1337, 1},
+		{tfhe.FheUint32, 1333337, 1337, 1},
+		{tfhe.FheUint64, 13333377777777777, 133377777777, 1},
 	}
 	for _, tc := range testcases {
 		t.Run(fmt.Sprintf("teeNe with %s", tc.typ), func(t *testing.T) {
