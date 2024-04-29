@@ -82,10 +82,10 @@ func TestTeeRotrRun(t *testing.T) {
 		rhs      uint64
 		expected uint64
 	}{
-		{tfhe.FheUint4, 2, 1, 1},
+		{tfhe.FheUint4, 2, 1, 17},
 		{tfhe.FheUint8, 4, 2, 1},
-		{tfhe.FheUint16, 4283, 3, 535},
-		{tfhe.FheUint32, 1333337, 10, 1302},
+		{tfhe.FheUint16, 4283, 3, 25111},
+		{tfhe.FheUint32, 1333337, 10, 373294358},
 		{tfhe.FheUint64, 13333377777777777, 22, 7417925568713886648},
 	}
 	for _, tc := range testcases {

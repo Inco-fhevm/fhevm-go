@@ -58,7 +58,7 @@ func teeSelectHelper(t *testing.T, fheUintType tfhe.FheUintType, fhs bool, shs, 
 	environment.depth = depth
 	addr := common.Address{}
 	readOnly := false
-	fhsCt, err := importTeePlaintextToEVM(environment, depth, boolToUint64(fhs), fheUintType)
+	fhsCt, err := importTeePlaintextToEVM(environment, depth, fhs, fheUintType)
 	if err != nil {
 		t.Fatalf(err.Error())
 	}
@@ -129,7 +129,7 @@ func teeNegNotHelper(t *testing.T, fheUintType tfhe.FheUintType, chs, expected u
 	}
 }
 
-func importTeePlaintextToEVM(environment EVMEnvironment, depth int, value uint64, typ tfhe.FheUintType) (tfhe.TfheCiphertext, error) {
+func importTeePlaintextToEVM(environment EVMEnvironment, depth int, value any, typ tfhe.FheUintType) (tfhe.TfheCiphertext, error) {
 	valueBz, err := marshalTfheType(value, typ)
 	if err != nil {
 		return tfhe.TfheCiphertext{}, err

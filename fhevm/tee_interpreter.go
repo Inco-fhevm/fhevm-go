@@ -277,33 +277,47 @@ func extract3Operands(op string, environment EVMEnvironment, input []byte, runSp
 }
 
 // marshalTfheType converts a any to a byte slice
-func marshalTfheType(value uint64, typ tfhe.FheUintType) ([]byte, error) {
-	switch typ {
-	case tfhe.FheBool:
+func marshalTfheType(value any, typ tfhe.FheUintType) ([]byte, error) {
+	switch value := any(value).(type) {
+	case uint64:
+		switch typ {
+		case tfhe.FheBool:
+			resultBz := make([]byte, 1)
+			resultBz[0] = byte(value)
+			return resultBz, nil
+		case tfhe.FheUint4:
+			resultBz := []byte{byte(value)}
+			return resultBz, nil
+		case tfhe.FheUint8:
+			resultBz := []byte{byte(value)}
+			return resultBz, nil
+		case tfhe.FheUint16:
+			resultBz := make([]byte, 2)
+			binary.BigEndian.PutUint16(resultBz, uint16(value))
+			return resultBz, nil
+		case tfhe.FheUint32:
+			resultBz := make([]byte, 4)
+			binary.BigEndian.PutUint32(resultBz, uint32(value))
+			return resultBz, nil
+		case tfhe.FheUint64:
+			resultBz := make([]byte, 8)
+			binary.BigEndian.PutUint64(resultBz, value)
+			return resultBz, nil
+		default:
+			return nil,
+				fmt.Errorf("unsupported FheUintType: %s", typ)
+		}
+	case bool:
 		resultBz := make([]byte, 1)
-		resultBz[0] = byte(value)
-		return resultBz, nil
-	case tfhe.FheUint4:
-		resultBz := []byte{byte(value)}
-		return resultBz, nil
-	case tfhe.FheUint8:
-		resultBz := []byte{byte(value)}
-		return resultBz, nil
-	case tfhe.FheUint16:
-		resultBz := make([]byte, 2)
-		binary.BigEndian.PutUint16(resultBz, uint16(value))
-		return resultBz, nil
-	case tfhe.FheUint32:
-		resultBz := make([]byte, 4)
-		binary.BigEndian.PutUint32(resultBz, uint32(value))
-		return resultBz, nil
-	case tfhe.FheUint64:
-		resultBz := make([]byte, 8)
-		binary.BigEndian.PutUint64(resultBz, value)
+		if value {
+			resultBz[0] = 1
+		} else {
+			resultBz[0] = 0
+		}
 		return resultBz, nil
 	default:
 		return nil,
-			fmt.Errorf("unsupported FheUintType: %s", typ)
+			fmt.Errorf("unsupported value type: %s", value)
 	}
 }
 
