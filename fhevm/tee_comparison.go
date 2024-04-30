@@ -23,7 +23,7 @@ func teeLtRun(environment EVMEnvironment, caller common.Address, addr common.Add
 }
 
 func teeEqRun(environment EVMEnvironment, caller common.Address, addr common.Address, input []byte, readOnly bool, runSpan trace.Span) ([]byte, error) {
-	return doEqNeoperationsGeneric(environment, caller, input, runSpan, func(a, b *big.Int) uint64 {
+	return doEqNeOperationsGeneric(environment, caller, input, runSpan, func(a, b *big.Int) uint64 {
 		if a.Cmp(b) == 0 {
 			return 1
 		} else {
@@ -45,7 +45,7 @@ func teeGtRun(environment EVMEnvironment, caller common.Address, addr common.Add
 }
 
 func teeNeRun(environment EVMEnvironment, caller common.Address, addr common.Address, input []byte, readOnly bool, runSpan trace.Span) ([]byte, error) {
-	return doEqNeoperationsGeneric(environment, caller, input, runSpan, func(a, b *big.Int) uint64 {
+	return doEqNeOperationsGeneric(environment, caller, input, runSpan, func(a, b *big.Int) uint64 {
 		if a.Cmp(b) != 0 {
 			return 1
 		} else {
@@ -89,7 +89,7 @@ func teeSelectRun(environment EVMEnvironment, caller common.Address, addr common
 	}
 
 	// TODO ref: https://github.com/Inco-fhevm/inco-monorepo/issues/6
-	if sp.FheUintType == tfhe.FheUint160 {
+	if sp.FheUintType == tfhe.FheUint128 {
 		panic("TODO implement me")
 	}
 
@@ -101,7 +101,7 @@ func teeSelectRun(environment EVMEnvironment, caller common.Address, addr common
 	//
 	// Note that we do arithmetic operations on uint64, then we convert th
 	// result back to the FheUintType.
-	if sp.FheUintType == tfhe.FheUint128 {
+	if sp.FheUintType == tfhe.FheUint160 {
 		var result big.Int
 		s := big.NewInt(0).SetBytes(sp.Value)
 		t := big.NewInt(0).SetBytes(tp.Value)
@@ -110,7 +110,7 @@ func teeSelectRun(environment EVMEnvironment, caller common.Address, addr common
 		} else {
 			result.Set(t)
 		}
-		resultBz, err = marshalTfheType(result, sp.FheUintType)
+		resultBz, err = marshalTfheType(&result, sp.FheUintType)
 		if err != nil {
 			return nil, err
 		}

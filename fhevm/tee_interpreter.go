@@ -73,7 +73,7 @@ func doOperationGeneric(
 }
 
 // doEqNeoperationsGeneric is a generic function to do TEE bit shift operations
-func doEqNeoperationsGeneric(
+func doEqNeOperationsGeneric(
 	environment EVMEnvironment,
 	caller common.Address,
 	input []byte,
@@ -365,6 +365,10 @@ func marshalTfheType(value any, typ tfhe.FheUintType) ([]byte, error) {
 			resultBz := make([]byte, 8)
 			binary.BigEndian.PutUint64(resultBz, value)
 			return resultBz, nil
+		case tfhe.FheUint160:
+			resultBz := make([]byte, 8)
+			binary.BigEndian.PutUint64(resultBz, value)
+			return resultBz, nil
 		default:
 			return nil,
 				fmt.Errorf("unsupported FheUintType: %s", typ)
@@ -376,6 +380,9 @@ func marshalTfheType(value any, typ tfhe.FheUintType) ([]byte, error) {
 		} else {
 			resultBz[0] = 0
 		}
+		return resultBz, nil
+	case *big.Int:
+		resultBz := value.Bytes()
 		return resultBz, nil
 	default:
 		return nil,
