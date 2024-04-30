@@ -50,6 +50,7 @@ func doOperationGeneric(
 	r := big.NewInt(0).SetBytes(rp.Value).Uint64()
 
 	result := operator(l, r)
+
 	var resultBz []byte
 	resultBz, err = marshalTfheType(result, lp.FheUintType)
 	if err != nil {
@@ -77,7 +78,7 @@ func doShiftOperationGeneric(
 	caller common.Address,
 	input []byte,
 	runSpan trace.Span,
-	operator func(a, b uint64, typ tfhe.FheUintType) uint64,
+	operator func(a, b uint64, typ tfhe.FheUintType) (uint64, error),
 	op string) ([]byte, error) {
 	logger := environment.GetLogger()
 
@@ -107,7 +108,11 @@ func doShiftOperationGeneric(
 	l := big.NewInt(0).SetBytes(lp.Value).Uint64()
 	r := big.NewInt(0).SetBytes(rp.Value).Uint64()
 
-	result := operator(l, r, lp.FheUintType)
+	result, err := operator(l, r, lp.FheUintType)
+	if err != nil {
+		logger.Error(op, "failed", "err", err)
+		return nil, err
+	}
 	var resultBz []byte
 	resultBz, err = marshalTfheType(result, lp.FheUintType)
 	if err != nil {
@@ -165,6 +170,7 @@ func doNegNotOperationGeneric(
 	c := big.NewInt(0).SetBytes(cp.Value).Uint64()
 
 	result := operator(c)
+
 	var resultBz []byte
 	resultBz, err = marshalTfheType(result, cp.FheUintType)
 	if err != nil {
