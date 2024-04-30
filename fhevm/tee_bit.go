@@ -12,20 +12,20 @@ func teeShlRun(environment EVMEnvironment, caller common.Address, addr common.Ad
 	return doShiftOperationGeneric(environment, caller, input, runSpan, func(a, b uint64, typ tfhe.FheUintType) (uint64, error) {
 		switch typ {
 		// There isn't bitwise shift operation between ebool. So it doesn't include case 0.
-		case 1:
-			a1, b1 := uint8(a), uint8(b)
+		case tfhe.FheUint4:
+			a1, b1 := uint8(a), uint8(b)%4
 			return uint64(a1 << b1), nil
-		case 2:
-			a1, b1 := uint8(a), uint8(b)
+		case tfhe.FheUint8:
+			a1, b1 := uint8(a), uint8(b)%8
 			return uint64(a1 << b1), nil
-		case 3:
-			a1, b1 := uint16(a), uint16(b)
+		case tfhe.FheUint16:
+			a1, b1 := uint16(a), uint16(b)%16
 			return uint64(a1 << b1), nil
-		case 4:
-			a1, b1 := uint32(a), uint32(b)
+		case tfhe.FheUint32:
+			a1, b1 := uint32(a), uint32(b)%32
 			return uint64(a1 << b1), nil
-		case 5:
-			return a << b, nil
+		case tfhe.FheUint64:
+			return a << (b % 64), nil
 		default:
 			return 0, fmt.Errorf("unsupported FheUintType: %s", typ)
 		}
@@ -36,20 +36,20 @@ func teeShrRun(environment EVMEnvironment, caller common.Address, addr common.Ad
 	return doShiftOperationGeneric(environment, caller, input, runSpan, func(a, b uint64, typ tfhe.FheUintType) (uint64, error) {
 		switch typ {
 		// There isn't bitwise shift operation between ebool. So it doesn't include case 0.
-		case 1:
-			a1, b1 := uint8(a), uint8(b)
+		case tfhe.FheUint4:
+			a1, b1 := uint8(a), uint8(b)%4
 			return uint64(a1 >> b1), nil
-		case 2:
-			a1, b1 := uint8(a), uint8(b)
+		case tfhe.FheUint8:
+			a1, b1 := uint8(a), uint8(b)%8
 			return uint64(a1 >> b1), nil
-		case 3:
-			a1, b1 := uint16(a), uint16(b)
+		case tfhe.FheUint16:
+			a1, b1 := uint16(a), uint16(b)%16
 			return uint64(a1 >> b1), nil
-		case 4:
-			a1, b1 := uint32(a), uint32(b)
+		case tfhe.FheUint32:
+			a1, b1 := uint32(a), uint32(b)%32
 			return uint64(a1 >> b1), nil
-		case 5:
-			return (a >> b), nil
+		case tfhe.FheUint64:
+			return a >> (b % 64), nil
 		default:
 			return 0, fmt.Errorf("unsupported FheUintType: %s", typ)
 		}
@@ -58,22 +58,26 @@ func teeShrRun(environment EVMEnvironment, caller common.Address, addr common.Ad
 
 func teeRotlRun(environment EVMEnvironment, caller common.Address, addr common.Address, input []byte, readOnly bool, runSpan trace.Span) ([]byte, error) {
 	return doShiftOperationGeneric(environment, caller, input, runSpan, func(a, b uint64, typ tfhe.FheUintType) (uint64, error) {
+		// Rotate the bits of 'a' to the right by 'b' positions.
+		// '(a >> b)' shifts bits to the right, discarding bits shifted out.
+		// '(a << (typ - b))' shifts bits to the left by 'typ - b' positions, effectively moving the discarded bits from the right shift to the left end.
+		// The bitwise OR '|' combines these two operations, achieving a right rotation of 'b' positions.
 		switch typ {
 		// There isn't bitwise shift operation between ebool. So it doesn't include case 0.
-		case 1:
-			a1, b1 := uint8(a), uint8(b)
-			return uint64((a1 << b1) | (a1 >> (uint8(4) - b1%4))), nil
-		case 2:
-			a1, b1 := uint8(a), uint8(b)
-			return uint64((a1 << b1) | (a1 >> (uint8(8) - b1%8))), nil
-		case 3:
-			a1, b1 := uint16(a), uint16(b)
-			return uint64((a1 << b1) | (a1 >> (uint16(16) - b1%16))), nil
-		case 4:
-			a1, b1 := uint32(a), uint32(b)
-			return uint64((a1 << b1) | (a1 >> (uint32(32) - b1%32))), nil
-		case 5:
-			return (a << b) | (a >> (64 - b%64)), nil
+		case tfhe.FheUint4:
+			a1, b1 := uint8(a), uint8(b)%4
+			return uint64((a1 << b1) | (a1 >> (uint8(4) - b1))), nil
+		case tfhe.FheUint8:
+			a1, b1 := uint8(a), uint8(b)%8
+			return uint64((a1 << b1) | (a1 >> (uint8(8) - b1))), nil
+		case tfhe.FheUint16:
+			a1, b1 := uint16(a), uint16(b)%16
+			return uint64((a1 << b1) | (a1 >> (uint16(16) - b1))), nil
+		case tfhe.FheUint32:
+			a1, b1 := uint32(a), uint32(b)%32
+			return uint64((a1 << b1) | (a1 >> (uint32(32) - b1))), nil
+		case tfhe.FheUint64:
+			return (a << (b % 64)) | (a >> (64 - b%64)), nil
 		default:
 			return 0, fmt.Errorf("unsupported FheUintType: %s", typ)
 		}
@@ -82,22 +86,26 @@ func teeRotlRun(environment EVMEnvironment, caller common.Address, addr common.A
 
 func teeRotrRun(environment EVMEnvironment, caller common.Address, addr common.Address, input []byte, readOnly bool, runSpan trace.Span) ([]byte, error) {
 	return doShiftOperationGeneric(environment, caller, input, runSpan, func(a, b uint64, typ tfhe.FheUintType) (uint64, error) {
+		// Rotate the bits of 'a' to the left by 'b' positions.
+		// '(a << b)' shifts bits to the left, moving bits towards the most significant bit (left end) and discarding bits that fall off the left end.
+		// '(a >> (typ - b))' shifts bits to the right by 'typ - b' positions, effectively moving the discarded bits from the left shift to the right end.
+		// The bitwise OR '|' operation combines these two shifted values, achieving a left rotation of 'b' positions on 'a'.
 		switch typ {
 		// There isn't bitwise shift operation between ebool. So it doesn't include case 0.
-		case 1:
-			a1, b1 := uint8(a), uint8(b)
-			return uint64((a1 >> b1) | (a1 << (uint8(4) - b1%4))), nil
-		case 2:
-			a1, b1 := uint8(a), uint8(b)
-			return uint64((a1 >> b1) | (a1 << (uint8(8) - b1%8))), nil
-		case 3:
-			a1, b1 := uint16(a), uint16(b)
-			return uint64((a1 >> b1) | (a1 << (uint16(16) - b1%16))), nil
-		case 4:
-			a1, b1 := uint32(a), uint32(b)
-			return uint64((a1 >> b1) | (a1 << (uint32(32) - b1%32))), nil
-		case 5:
-			return (a >> b) | (a << (64 - b%64)), nil
+		case tfhe.FheUint4:
+			a1, b1 := uint8(a), uint8(b)%4
+			return uint64((a1 >> b1) | (a1 << (uint8(4) - b1))), nil
+		case tfhe.FheUint8:
+			a1, b1 := uint8(a), uint8(b)%8
+			return uint64((a1 >> b1) | (a1 << (uint8(8) - b1))), nil
+		case tfhe.FheUint16:
+			a1, b1 := uint16(a), uint16(b)%16
+			return uint64((a1 >> b1) | (a1 << (uint16(16) - b1))), nil
+		case tfhe.FheUint32:
+			a1, b1 := uint32(a), uint32(b)%32
+			return uint64((a1 >> b1) | (a1 << (uint32(32) - b1))), nil
+		case tfhe.FheUint64:
+			return (a >> (b % 64)) | (a << (64 - b%64)), nil
 		default:
 			return 0, fmt.Errorf("unsupported FheUintType: %s", typ)
 		}
