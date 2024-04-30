@@ -23,8 +23,12 @@ func teeLtRun(environment EVMEnvironment, caller common.Address, addr common.Add
 }
 
 func teeEqRun(environment EVMEnvironment, caller common.Address, addr common.Address, input []byte, readOnly bool, runSpan trace.Span) ([]byte, error) {
-	return doOperationGeneric(environment, caller, input, runSpan, func(a, b uint64) uint64 {
-		return boolToUint64(a == b)
+	return doEqNeoperationsGeneric(environment, caller, input, runSpan, func(a, b *big.Int) uint64 {
+		if a.Cmp(b) == 0 {
+			return 1
+		} else {
+			return 0
+		}
 	}, "teeEqRun")
 }
 
@@ -41,8 +45,12 @@ func teeGtRun(environment EVMEnvironment, caller common.Address, addr common.Add
 }
 
 func teeNeRun(environment EVMEnvironment, caller common.Address, addr common.Address, input []byte, readOnly bool, runSpan trace.Span) ([]byte, error) {
-	return doOperationGeneric(environment, caller, input, runSpan, func(a, b uint64) uint64 {
-		return boolToUint64(a != b)
+	return doEqNeoperationsGeneric(environment, caller, input, runSpan, func(a, b *big.Int) uint64 {
+		if a.Cmp(b) != 0 {
+			return 1
+		} else {
+			return 0
+		}
 	}, "teeNeRun")
 }
 
@@ -81,10 +89,11 @@ func teeSelectRun(environment EVMEnvironment, caller common.Address, addr common
 	}
 
 	// TODO ref: https://github.com/Inco-fhevm/inco-monorepo/issues/6
-	if sp.FheUintType == tfhe.FheUint128 || sp.FheUintType == tfhe.FheUint160 {
+	if sp.FheUintType == tfhe.FheUint160 {
 		panic("TODO implement me")
 	}
 
+	var resultBz []byte
 	// Using math/big here to make code more readable.
 	// A more efficient way would be to use binary.BigEndian.UintXX().
 	// However, that would require a switch case. We prefer for now to use
@@ -92,19 +101,34 @@ func teeSelectRun(environment EVMEnvironment, caller common.Address, addr common
 	//
 	// Note that we do arithmetic operations on uint64, then we convert th
 	// result back to the FheUintType.
-	var result uint64
-	s := big.NewInt(0).SetBytes(sp.Value).Uint64()
-	t := big.NewInt(0).SetBytes(tp.Value).Uint64()
-	if fp.Value[0] == 1 {
-		result = s
+	if sp.FheUintType == tfhe.FheUint128 {
+		var result big.Int
+		s := big.NewInt(0).SetBytes(sp.Value)
+		t := big.NewInt(0).SetBytes(tp.Value)
+		if fp.Value[0] == 1 {
+			result.Set(s)
+		} else {
+			result.Set(t)
+		}
+		resultBz, err = marshalTfheType(result, sp.FheUintType)
+		if err != nil {
+			return nil, err
+		}
 	} else {
-		result = t
+		var result uint64
+		s := big.NewInt(0).SetBytes(sp.Value).Uint64()
+		t := big.NewInt(0).SetBytes(tp.Value).Uint64()
+		if fp.Value[0] == 1 {
+			result = s
+		} else {
+			result = t
+		}
+		resultBz, err = marshalTfheType(result, sp.FheUintType)
+		if err != nil {
+			return nil, err
+		}
 	}
 
-	resultBz, err := marshalTfheType(result, sp.FheUintType)
-	if err != nil {
-		return nil, err
-	}
 	teePlaintext := tee.NewTeePlaintext(resultBz, sp.FheUintType, caller)
 
 	resultCt, err := tee.Encrypt(teePlaintext)

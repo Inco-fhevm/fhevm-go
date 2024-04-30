@@ -72,6 +72,62 @@ func doOperationGeneric(
 	return resultHash[:], nil
 }
 
+// doEqNeoperationsGeneric is a generic function to do TEE bit shift operations
+func doEqNeoperationsGeneric(
+	environment EVMEnvironment,
+	caller common.Address,
+	input []byte,
+	runSpan trace.Span,
+	operator func(a, b *big.Int) uint64,
+	op string) ([]byte, error) {
+	logger := environment.GetLogger()
+
+	lp, rp, lhs, rhs, err := extract2Operands(op, environment, input, runSpan)
+	if err != nil {
+		logger.Error(op, "failed", "err", err)
+		return nil, err
+	}
+
+	// If we are doing gas estimation, skip execution and insert a random ciphertext as a result.
+	if !environment.IsCommitting() && !environment.IsEthCall() {
+		return importRandomCiphertext(environment, lhs.fheUintType()), nil
+	}
+
+	// TODO ref: https://github.com/Inco-fhevm/inco-monorepo/issues/6
+	if lp.FheUintType == tfhe.FheUint128 {
+		panic("TODO implement me")
+	}
+
+	// Using math/big here to make code more readable.
+	// A more efficient way would be to use binary.BigEndian.UintXX().
+	// However, that would require a switch case. We prefer for now to use
+	// big.Int as a one-liner that can handle variable-length bytes.
+
+	l := big.NewInt(0).SetBytes(lp.Value)
+	r := big.NewInt(0).SetBytes(rp.Value)
+
+	result := operator(l, r)
+
+	resultBz, err := marshalTfheType(result, lp.FheUintType)
+	if err != nil {
+		logger.Error(op, "failed", "err", err)
+		return nil, err
+	}
+
+	teePlaintext := tee.NewTeePlaintext(resultBz, lp.FheUintType, caller)
+
+	resultCt, err := tee.Encrypt(teePlaintext)
+	if err != nil {
+		logger.Error(op, "failed", "err", err)
+		return nil, err
+	}
+	importCiphertext(environment, &resultCt)
+
+	resultHash := resultCt.GetHash()
+	logger.Info(fmt.Sprintf("%s success", op), "lhs", lhs.hash().Hex(), "rhs", rhs.hash().Hex(), "result", resultHash.Hex())
+	return resultHash[:], nil
+}
+
 // doShiftOperationGeneric is a generic function to do TEE bit shift operations
 func doShiftOperationGeneric(
 	environment EVMEnvironment,
