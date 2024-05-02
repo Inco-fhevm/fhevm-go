@@ -13,14 +13,16 @@ import (
 	"go.opentelemetry.io/otel/trace"
 )
 
-// doOperationGeneric is a generic function to do TEE operations
-func doOperationGeneric(
+// doOp is a function to do TEE operations
+// We use uint64 because we need to use only types smaller than uint64
+func doOp(
 	environment EVMEnvironment,
 	caller common.Address,
 	input []byte,
 	runSpan trace.Span,
 	operator func(a, b uint64) uint64,
-	op string) ([]byte, error) {
+	op string,
+) ([]byte, error) {
 	logger := environment.GetLogger()
 
 	lp, rp, lhs, rhs, err := extract2Operands(op, environment, input, runSpan)
@@ -36,7 +38,8 @@ func doOperationGeneric(
 
 	// TODO ref: https://github.com/Inco-fhevm/inco-monorepo/issues/6
 	if lp.FheUintType == tfhe.FheUint128 || lp.FheUintType == tfhe.FheUint160 {
-		panic("TODO implement me")
+		// panic("TODO implement me")
+		logger.Error("unsupported FheUintType: %s", lp.FheUintType)
 	}
 
 	// Using math/big here to make code more readable.
@@ -72,14 +75,16 @@ func doOperationGeneric(
 	return resultHash[:], nil
 }
 
-// doEqNeoperationsGeneric is a generic function to do TEE bit shift operations
-func doEqNeOperationsGeneric(
+// doEqNeOp is a function to do TEE Eq/Ne operations
+// We use big.Int because we need to use FheUint160 for eaddress
+func doEqNeOp(
 	environment EVMEnvironment,
 	caller common.Address,
 	input []byte,
 	runSpan trace.Span,
-	operator func(a, b *big.Int) uint64,
-	op string) ([]byte, error) {
+	operator func(a, b *big.Int) bool,
+	op string,
+) ([]byte, error) {
 	logger := environment.GetLogger()
 
 	lp, rp, lhs, rhs, err := extract2Operands(op, environment, input, runSpan)
@@ -95,7 +100,8 @@ func doEqNeOperationsGeneric(
 
 	// TODO ref: https://github.com/Inco-fhevm/inco-monorepo/issues/6
 	if lp.FheUintType == tfhe.FheUint128 {
-		panic("TODO implement me")
+		// panic("TODO implement me")
+		logger.Error("unsupported FheUintType: %s", lp.FheUintType)
 	}
 
 	// Using math/big here to make code more readable.
@@ -128,14 +134,16 @@ func doEqNeOperationsGeneric(
 	return resultHash[:], nil
 }
 
-// doShiftOperationGeneric is a generic function to do TEE bit shift operations
-func doShiftOperationGeneric(
+// doShiftOp is a function to do TEE bit shift operations
+// We use uint64 because we need to use only types smaller than uint64
+func doShiftOp(
 	environment EVMEnvironment,
 	caller common.Address,
 	input []byte,
 	runSpan trace.Span,
 	operator func(a, b uint64, typ tfhe.FheUintType) (uint64, error),
-	op string) ([]byte, error) {
+	op string,
+) ([]byte, error) {
 	logger := environment.GetLogger()
 
 	lp, rp, lhs, rhs, err := extract2Operands(op, environment, input, runSpan)
@@ -151,7 +159,8 @@ func doShiftOperationGeneric(
 
 	// TODO ref: https://github.com/Inco-fhevm/inco-monorepo/issues/6
 	if lp.FheUintType == tfhe.FheUint128 || lp.FheUintType == tfhe.FheUint160 {
-		panic("TODO implement me")
+		// panic("TODO implement me")
+		logger.Error("unsupported FheUintType: %s", lp.FheUintType)
 	}
 
 	// Using math/big here to make code more readable.
@@ -190,14 +199,16 @@ func doShiftOperationGeneric(
 	return resultHash[:], nil
 }
 
-// doShiftOperationGeneric is a generic function to do TEE bit inverse operations
-func doNegNotOperationGeneric(
+// doNegNotOp is a generic function to do TEE bit inverse operations
+// We use uint64 because we need to use only types smaller than uint64
+func doNegNotOp(
 	environment EVMEnvironment,
 	caller common.Address,
 	input []byte,
 	runSpan trace.Span,
 	operator func(a uint64) uint64,
-	op string) ([]byte, error) {
+	op string,
+) ([]byte, error) {
 	logger := environment.GetLogger()
 
 	cp, ct, err := extract1Operands(op, environment, input, runSpan)
@@ -213,7 +224,8 @@ func doNegNotOperationGeneric(
 
 	// TODO ref: https://github.com/Inco-fhevm/inco-monorepo/issues/6
 	if cp.FheUintType == tfhe.FheUint128 || cp.FheUintType == tfhe.FheUint160 {
-		panic("TODO implement me")
+		// panic("TODO implement me")
+		logger.Error("unsupported FheUintType: %s", cp.FheUintType)
 	}
 
 	// Using math/big here to make code more readable.

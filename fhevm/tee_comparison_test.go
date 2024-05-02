@@ -62,14 +62,14 @@ func TestTeeEqRun(t *testing.T) {
 		typ      tfhe.FheUintType
 		lhs      *big.Int
 		rhs      *big.Int
-		expected uint64
+		expected bool
 	}{
-		{tfhe.FheUint4, big.NewInt(2), big.NewInt(1), 0},
-		{tfhe.FheUint8, big.NewInt(2), big.NewInt(1), 0},
-		{tfhe.FheUint16, big.NewInt(4283), big.NewInt(1337), 0},
-		{tfhe.FheUint32, big.NewInt(1333337), big.NewInt(1337), 0},
-		{tfhe.FheUint64, big.NewInt(13333377777777777), big.NewInt(133377777777), 0},
-		{tfhe.FheUint160, a, b, 0},
+		{tfhe.FheUint4, big.NewInt(2), big.NewInt(1), false},
+		{tfhe.FheUint8, big.NewInt(2), big.NewInt(1), false},
+		{tfhe.FheUint16, big.NewInt(4283), big.NewInt(1337), false},
+		{tfhe.FheUint32, big.NewInt(1333337), big.NewInt(1337), false},
+		{tfhe.FheUint64, big.NewInt(13333377777777777), big.NewInt(133377777777), false},
+		{tfhe.FheUint160, a, b, false},
 	}
 	for _, tc := range testcases {
 		t.Run(fmt.Sprintf("teeEq with %s", tc.typ), func(t *testing.T) {

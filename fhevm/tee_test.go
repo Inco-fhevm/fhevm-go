@@ -11,7 +11,7 @@ import (
 
 // teeOperationHelper is a helper function to test TEE operations,
 // which are passed into the last argument as a function.
-func teeOperationHelper(t *testing.T, fheUintType tfhe.FheUintType, lhs, rhs any, expected uint64, signature string) {
+func teeOperationHelper(t *testing.T, fheUintType tfhe.FheUintType, lhs, rhs, expected any, signature string) {
 	depth := 1
 	environment := newTestEVMEnvironment()
 	environment.depth = depth
@@ -45,7 +45,17 @@ func teeOperationHelper(t *testing.T, fheUintType tfhe.FheUintType, lhs, rhs any
 	}
 
 	result := new(big.Int).SetBytes(teePlaintext.Value).Uint64()
-	if result != expected {
+
+	var expect uint64
+	switch expected := expected.(type) {
+	case bool:
+		expect = boolToUint64(expected)
+	case uint64:
+		expect = expected
+	default:
+		expect = 0
+	}
+	if result != expect {
 		t.Fatalf("incorrect result, expected=%d, got=%d", expected, result)
 	}
 }
