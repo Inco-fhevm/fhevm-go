@@ -25,7 +25,7 @@ func doOp(
 ) ([]byte, error) {
 	logger := environment.GetLogger()
 
-	lp, rp, lhs, rhs, err := extract2Operands(op, environment, input, runSpan)
+	isScalar, lp, rp, lhs, rhs, err := extract2Operands(op, environment, input, runSpan)
 	if err != nil {
 		logger.Error(op, "failed", "err", err)
 		return nil, err
@@ -50,7 +50,12 @@ func doOp(
 	// Note that we do arithmetic operations on uint64, then we convert the
 	// result back to the FheUintType.
 	l := big.NewInt(0).SetBytes(lp.Value).Uint64()
-	r := big.NewInt(0).SetBytes(rp.Value).Uint64()
+	var r uint64
+	if !isScalar {
+		r = big.NewInt(0).SetBytes(rp.(*tee.TeePlaintext).Value).Uint64()
+	} else {
+		r = big.NewInt(0).SetBytes(rp.([]byte)).Uint64()
+	}
 
 	result := operator(l, r)
 
@@ -71,7 +76,11 @@ func doOp(
 	importCiphertext(environment, &resultCt)
 
 	resultHash := resultCt.GetHash()
-	logger.Info(fmt.Sprintf("%s success", op), "lhs", lhs.hash().Hex(), "rhs", rhs.hash().Hex(), "result", resultHash.Hex())
+	if !isScalar {
+		logger.Info(fmt.Sprintf("%s success", op), "lhs", lhs.hash().Hex(), "rhs", rhs.(*verifiedCiphertext).hash().Hex(), "result", resultHash.Hex())
+	} else {
+		logger.Info(fmt.Sprintf("%s success", op), "lhs", lhs.hash().Hex(), "rhs", rhs, "result", resultHash.Hex())
+	}
 	return resultHash[:], nil
 }
 
@@ -87,7 +96,7 @@ func doEqNeOp(
 ) ([]byte, error) {
 	logger := environment.GetLogger()
 
-	lp, rp, lhs, rhs, err := extract2Operands(op, environment, input, runSpan)
+	isScalar, lp, rp, lhs, rhs, err := extract2Operands(op, environment, input, runSpan)
 	if err != nil {
 		logger.Error(op, "failed", "err", err)
 		return nil, err
@@ -110,7 +119,12 @@ func doEqNeOp(
 	// big.Int as a one-liner that can handle variable-length bytes.
 
 	l := big.NewInt(0).SetBytes(lp.Value)
-	r := big.NewInt(0).SetBytes(rp.Value)
+	var r *big.Int
+	if !isScalar {
+		r = big.NewInt(0).SetBytes(rp.(*tee.TeePlaintext).Value)
+	} else {
+		r = big.NewInt(0).SetBytes(rp.([]byte))
+	}
 
 	result := operator(l, r)
 
@@ -130,7 +144,11 @@ func doEqNeOp(
 	importCiphertext(environment, &resultCt)
 
 	resultHash := resultCt.GetHash()
-	logger.Info(fmt.Sprintf("%s success", op), "lhs", lhs.hash().Hex(), "rhs", rhs.hash().Hex(), "result", resultHash.Hex())
+	if !isScalar {
+		logger.Info(fmt.Sprintf("%s success", op), "lhs", lhs.hash().Hex(), "rhs", rhs.(*verifiedCiphertext).hash().Hex(), "result", resultHash.Hex())
+	} else {
+		logger.Info(fmt.Sprintf("%s success", op), "lhs", lhs.hash().Hex(), "rhs", rhs, "result", resultHash.Hex())
+	}
 	return resultHash[:], nil
 }
 
@@ -146,7 +164,7 @@ func doShiftOp(
 ) ([]byte, error) {
 	logger := environment.GetLogger()
 
-	lp, rp, lhs, rhs, err := extract2Operands(op, environment, input, runSpan)
+	isScalar, lp, rp, lhs, rhs, err := extract2Operands(op, environment, input, runSpan)
 	if err != nil {
 		logger.Error(op, "failed", "err", err)
 		return nil, err
@@ -171,7 +189,12 @@ func doShiftOp(
 	// Note that we do arithmetic operations on uint64, then we convert the
 	// result back to the FheUintType.
 	l := big.NewInt(0).SetBytes(lp.Value).Uint64()
-	r := big.NewInt(0).SetBytes(rp.Value).Uint64()
+	var r uint64
+	if !isScalar {
+		r = big.NewInt(0).SetBytes(rp.(*tee.TeePlaintext).Value).Uint64()
+	} else {
+		r = big.NewInt(0).SetBytes(rp.([]byte)).Uint64()
+	}
 
 	result, err := operator(l, r, lp.FheUintType)
 	if err != nil {
@@ -195,7 +218,11 @@ func doShiftOp(
 	importCiphertext(environment, &resultCt)
 
 	resultHash := resultCt.GetHash()
-	logger.Info(fmt.Sprintf("%s success", op), "lhs", lhs.hash().Hex(), "rhs", rhs.hash().Hex(), "result", resultHash.Hex())
+	if !isScalar {
+		logger.Info(fmt.Sprintf("%s success", op), "lhs", lhs.hash().Hex(), "rhs", rhs.(*verifiedCiphertext).hash().Hex(), "result", resultHash.Hex())
+	} else {
+		logger.Info(fmt.Sprintf("%s success", op), "lhs", lhs.hash().Hex(), "rhs", rhs, "result", resultHash.Hex())
+	}
 	return resultHash[:], nil
 }
 
@@ -282,35 +309,59 @@ func extract1Operands(op string, environment EVMEnvironment, input []byte, runSp
 	return &cp, ct, nil
 }
 
-func extract2Operands(op string, environment EVMEnvironment, input []byte, runSpan trace.Span) (*tee.TeePlaintext, *tee.TeePlaintext, *verifiedCiphertext, *verifiedCiphertext, error) {
+func extract2Operands(op string, environment EVMEnvironment, input []byte, runSpan trace.Span) (bool, *tee.TeePlaintext, any, *verifiedCiphertext, any, error) {
 	input = input[:minInt(65, len(input))]
 
 	logger := environment.GetLogger()
 
-	lhs, rhs, err := get2VerifiedOperands(environment, input)
-	otelDescribeOperands(runSpan, encryptedOperand(*lhs), encryptedOperand(*rhs))
+	isScalar, err := isScalarOp(input)
 	if err != nil {
-		logger.Error(fmt.Sprintf("%s inputs not verified", op), "err", err, "input", hex.EncodeToString(input))
-		return nil, nil, nil, nil, err
-	}
-	if lhs.fheUintType() != rhs.fheUintType() {
-		logger.Error(fmt.Sprintf("%s operand type mismatch", op), "lhs", lhs.fheUintType(), "rhs", rhs.fheUintType())
-		return nil, nil, nil, nil, errors.New("operand type mismatch")
+		logger.Error(fmt.Sprintf("%s can not detect if operator is meant to be scalar", op), "err", err, "input", hex.EncodeToString(input))
+		return false, nil, nil, nil, nil, err
 	}
 
-	lp, err := tee.Decrypt(lhs.ciphertext)
-	if err != nil {
-		logger.Error(fmt.Sprintf("%s failed", op), "err", err)
-		return nil, nil, lhs, rhs, err
+	if !isScalar {
+		lhs, rhs, err := get2VerifiedOperands(environment, input)
+		otelDescribeOperands(runSpan, encryptedOperand(*lhs), encryptedOperand(*rhs))
+		if err != nil {
+			logger.Error(fmt.Sprintf("%s inputs not verified", op), "err", err, "input", hex.EncodeToString(input))
+			return isScalar, nil, nil, nil, nil, err
+		}
+		if lhs.fheUintType() != rhs.fheUintType() {
+			logger.Error(fmt.Sprintf("%s operand type mismatch", op), "lhs", lhs.fheUintType(), "rhs", rhs.fheUintType())
+			return isScalar, nil, nil, nil, nil, errors.New("operand type mismatch")
+		}
+
+		lp, err := tee.Decrypt(lhs.ciphertext)
+		if err != nil {
+			logger.Error(fmt.Sprintf("%s failed", op), "err", err)
+			return isScalar, nil, nil, lhs, rhs, err
+		}
+
+		rp, err := tee.Decrypt(rhs.ciphertext)
+		if err != nil {
+			logger.Error(fmt.Sprintf("%s failed", op), "err", err)
+			return isScalar, nil, nil, lhs, rhs, err
+		}
+
+		return isScalar, &lp, &rp, lhs, rhs, nil
+	} else {
+		lhs, rhs, err := getScalarOperands(environment, input)
+		otelDescribeOperands(runSpan, encryptedOperand(*lhs), plainOperand(*rhs))
+		if err != nil {
+			logger.Error(fmt.Sprintf("%s inputs not verified", op), "err", err, "input", hex.EncodeToString(input))
+			return isScalar, nil, nil, nil, nil, err
+		}
+
+		lp, err := tee.Decrypt(lhs.ciphertext)
+		if err != nil {
+			logger.Error(fmt.Sprintf("%s failed", op), "err", err)
+			return isScalar, nil, nil, lhs, rhs, err
+		}
+
+		return isScalar, &lp, rhs, lhs, rhs, nil
 	}
 
-	rp, err := tee.Decrypt(rhs.ciphertext)
-	if err != nil {
-		logger.Error(fmt.Sprintf("%s failed", op), "err", err)
-		return nil, nil, lhs, rhs, err
-	}
-
-	return &lp, &rp, lhs, rhs, nil
 }
 
 func extract3Operands(op string, environment EVMEnvironment, input []byte, runSpan trace.Span) (*tee.TeePlaintext, *tee.TeePlaintext, *tee.TeePlaintext, *verifiedCiphertext, *verifiedCiphertext, *verifiedCiphertext, error) {
