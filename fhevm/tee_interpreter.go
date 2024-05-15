@@ -50,12 +50,7 @@ func doOp(
 	// Note that we do arithmetic operations on uint64, then we convert the
 	// result back to the FheUintType.
 	l := big.NewInt(0).SetBytes(lp.Value).Uint64()
-	var r uint64
-	if !isScalar {
-		r = big.NewInt(0).SetBytes(rp.(*tee.TeePlaintext).Value).Uint64()
-	} else {
-		r = big.NewInt(0).SetBytes(rp.([]byte)).Uint64()
-	}
+	r := big.NewInt(0).SetBytes(rp.Value).Uint64()
 
 	result := operator(l, r)
 
@@ -77,7 +72,7 @@ func doOp(
 
 	resultHash := resultCt.GetHash()
 	if !isScalar {
-		logger.Info(fmt.Sprintf("%s success", op), "lhs", lhs.hash().Hex(), "rhs", rhs.(*verifiedCiphertext).hash().Hex(), "result", resultHash.Hex())
+		logger.Info(fmt.Sprintf("%s success", op), "lhs", lhs.hash().Hex(), "rhs", rhs.hash().Hex(), "result", resultHash.Hex())
 	} else {
 		logger.Info(fmt.Sprintf("%s success", op), "lhs", lhs.hash().Hex(), "rhs", rhs, "result", resultHash.Hex())
 	}
@@ -119,12 +114,7 @@ func doEqNeOp(
 	// big.Int as a one-liner that can handle variable-length bytes.
 
 	l := big.NewInt(0).SetBytes(lp.Value)
-	var r *big.Int
-	if !isScalar {
-		r = big.NewInt(0).SetBytes(rp.(*tee.TeePlaintext).Value)
-	} else {
-		r = big.NewInt(0).SetBytes(rp.([]byte))
-	}
+	r := big.NewInt(0).SetBytes(rp.Value)
 
 	result := operator(l, r)
 
@@ -145,7 +135,7 @@ func doEqNeOp(
 
 	resultHash := resultCt.GetHash()
 	if !isScalar {
-		logger.Info(fmt.Sprintf("%s success", op), "lhs", lhs.hash().Hex(), "rhs", rhs.(*verifiedCiphertext).hash().Hex(), "result", resultHash.Hex())
+		logger.Info(fmt.Sprintf("%s success", op), "lhs", lhs.hash().Hex(), "rhs", rhs.hash().Hex(), "result", resultHash.Hex())
 	} else {
 		logger.Info(fmt.Sprintf("%s success", op), "lhs", lhs.hash().Hex(), "rhs", rhs, "result", resultHash.Hex())
 	}
@@ -189,12 +179,7 @@ func doShiftOp(
 	// Note that we do arithmetic operations on uint64, then we convert the
 	// result back to the FheUintType.
 	l := big.NewInt(0).SetBytes(lp.Value).Uint64()
-	var r uint64
-	if !isScalar {
-		r = big.NewInt(0).SetBytes(rp.(*tee.TeePlaintext).Value).Uint64()
-	} else {
-		r = big.NewInt(0).SetBytes(rp.([]byte)).Uint64()
-	}
+	r := big.NewInt(0).SetBytes(rp.Value).Uint64()
 
 	result, err := operator(l, r, lp.FheUintType)
 	if err != nil {
@@ -219,7 +204,7 @@ func doShiftOp(
 
 	resultHash := resultCt.GetHash()
 	if !isScalar {
-		logger.Info(fmt.Sprintf("%s success", op), "lhs", lhs.hash().Hex(), "rhs", rhs.(*verifiedCiphertext).hash().Hex(), "result", resultHash.Hex())
+		logger.Info(fmt.Sprintf("%s success", op), "lhs", lhs.hash().Hex(), "rhs", rhs.hash().Hex(), "result", resultHash.Hex())
 	} else {
 		logger.Info(fmt.Sprintf("%s success", op), "lhs", lhs.hash().Hex(), "rhs", rhs, "result", resultHash.Hex())
 	}
@@ -309,7 +294,7 @@ func extract1Operands(op string, environment EVMEnvironment, input []byte, runSp
 	return &cp, ct, nil
 }
 
-func extract2Operands(op string, environment EVMEnvironment, input []byte, runSpan trace.Span) (*tee.TeePlaintext, any, *verifiedCiphertext, any, bool, error) {
+func extract2Operands(op string, environment EVMEnvironment, input []byte, runSpan trace.Span) (*tee.TeePlaintext, *tee.TeePlaintext, *verifiedCiphertext, *verifiedCiphertext, bool, error) {
 	input = input[:minInt(65, len(input))]
 
 	logger := environment.GetLogger()
@@ -353,13 +338,15 @@ func extract2Operands(op string, environment EVMEnvironment, input []byte, runSp
 			return nil, nil, nil, nil, isScalar, err
 		}
 
+		rp := tee.NewTeePlaintext(rhs.Bytes(), tfhe.FheUint128, common.Address{})
+
 		lp, err := tee.Decrypt(lhs.ciphertext)
 		if err != nil {
 			logger.Error(fmt.Sprintf("%s failed", op), "err", err)
-			return nil, nil, lhs, rhs, isScalar, err
+			return nil, nil, lhs, nil, isScalar, err
 		}
 
-		return &lp, rhs, lhs, rhs, isScalar, nil
+		return &lp, &rp, lhs, nil, isScalar, nil
 	}
 
 }
