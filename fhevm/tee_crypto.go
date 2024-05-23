@@ -131,20 +131,30 @@ func teeOptimisticRequireRun(environment EVMEnvironment, caller common.Address, 
 // one 0, the result will be 0 (false).
 func teeEvaluateRemainingOptimisticRequires(environment EVMEnvironment) (bool, error) {
 	requires := environment.FhevmData().optimisticRequires
-	len := len(requires)
+	length := len(requires)
 	defer func() { environment.FhevmData().resetTeeOptimisticRequires() }()
-	if len != 0 {
+	if length != 0 {
 		var cumulative *tfhe.TfheCiphertext = requires[0]
 		var err error
-		for i := 1; i < len; i++ {
+		for i := 1; i < length; i++ {
 			cumulative, err = cumulative.Bitand(requires[i])
 			if err != nil {
 				environment.GetLogger().Error("evaluateRemainingOptimisticRequires bitand failed", "err", err)
 				return false, err
 			}
 		}
-		result, err := decryptValue(environment, cumulative)
-		return result != 0, err
+		result, err := tee.Decrypt(cumulative)
+		if err != nil {
+			return false, err
+		}
+
+		plaintext := result.Value
+		// Always return a 32-byte big-endian integer.
+		ret := make([]byte, 32)
+		copy(ret[32-len(plaintext):], plaintext)
+
+		retVal := *new(big.Int).SetBytes(ret)
+		return retVal.Uint64() != 0, err
 	}
 	return true, nil
 }
