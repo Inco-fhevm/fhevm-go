@@ -360,6 +360,7 @@ func marshalTfheType(value any, typ tfhe.FheUintType) ([]byte, error) {
 			resultBz[0] = byte(value)
 			return resultBz, nil
 		case tfhe.FheUint4:
+			value = value & 0x0f
 			return []byte{byte(value)}, nil
 		case tfhe.FheUint8:
 			resultBz := []byte{byte(value)}
@@ -401,37 +402,6 @@ func marshalTfheType(value any, typ tfhe.FheUintType) ([]byte, error) {
 	}
 }
 
-// unmarshalTfheType converts a byte slice to a generic `any` type based on tfhe.FheUintType
-func unmarshalTfheType(data []byte, typ tfhe.FheUintType) (uint64, error) {
-	switch typ {
-	case tfhe.FheBool:
-		if data[len(data)-1] == 0 {
-			return 0, nil
-		} else {
-			return 1, nil
-		}
-	case tfhe.FheUint4, tfhe.FheUint8:
-		return uint64(data[len(data)-1]), nil
-	case tfhe.FheUint16:
-		if len(data) < 2 {
-			return 0, fmt.Errorf("data too short for FheUint16")
-		}
-		return uint64(binary.BigEndian.Uint16(data)), nil
-	case tfhe.FheUint32:
-		return uint64(binary.BigEndian.Uint32(data)), nil
-	case tfhe.FheUint64:
-		return binary.BigEndian.Uint64(data), nil
-	case tfhe.FheUint128:
-		return binary.BigEndian.Uint64(data[len(data)-8:]), nil
-	case tfhe.FheUint160:
-		// Assuming we only use the least significant 8 bytes for simplicity
-		// A full implementation would be more complex for 160 bits (20 bytes)
-		return binary.BigEndian.Uint64(data[len(data)-8:]), nil
-	default:
-		// If it's a BigInt or unsupported, throw an error
-		return 0, fmt.Errorf("unsupported FheUintType: %s", typ)
-	}
-}
 func boolToUint64(b bool) uint64 {
 	if b {
 		return 1 // true converts to 1
