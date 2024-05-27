@@ -124,7 +124,8 @@ func Decrypt(ct *tfhe.TfheCiphertext) (TeePlaintext, error) {
 // Need to be reviewed by Amaury and Elmer as we already have teeBitAndRun in tee_bit.go
 // As I couldn't find BitOperator with 2 ciphertext in tee_bit.go, defining a new function here.
 // Decrypt two ciphertexts in parameter and do bitAnd operation and then reencrypt it.
-// Return a new ciphertext.
+// Now passes empty address as the re-encryption public key
+// Returns a new ciphertext.
 func BitAnd(lt *tfhe.TfheCiphertext, rt *tfhe.TfheCiphertext) (*tfhe.TfheCiphertext, error) {
 	lp, err := Decrypt(lt)
 	if err != nil {
@@ -140,7 +141,7 @@ func BitAnd(lt *tfhe.TfheCiphertext, rt *tfhe.TfheCiphertext) (*tfhe.TfheCiphert
 	r := big.NewInt(0).SetBytes(rp.Value).Uint64()
 	result := l & r
 
-	// Re-encrypt
+	// Re-encrypt with empty public key
 	resultBz := []byte{byte(result)}
 	teePlaintext := NewTeePlaintext(resultBz, tfhe.FheUint8, common.Address{})
 	ct, err := Encrypt(teePlaintext)
