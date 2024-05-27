@@ -47,7 +47,7 @@ func TestTeeDecryptRun(t *testing.T) {
 	})
 }
 
-func TestTeeOptimisticRequire(t *testing.T) {
+func TestTeeOptimisticRequireSuccess(t *testing.T) {
 	signature := "teeOptimisticRequire(uint256)"
 	rapid.Check(t, func(t *rapid.T) {
 		testcases := []struct {
@@ -81,7 +81,10 @@ func TestTeeOptimisticRequire(t *testing.T) {
 			t.Fatalf("incorrect result, expected=%d, got=0", 1)
 		}
 	})
+}
 
+func TestTeeOptimisticRequireFail(t *testing.T) {
+	signature := "teeOptimisticRequire(uint256)"
 	rapid.Check(t, func(t *rapid.T) {
 		testcases := []struct {
 			typ     tfhe.FheUintType

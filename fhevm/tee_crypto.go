@@ -137,7 +137,7 @@ func teeEvaluateRemainingOptimisticRequires(environment EVMEnvironment) (bool, e
 		var cumulative *tfhe.TfheCiphertext = requires[0]
 		var err error
 		for i := 1; i < length; i++ {
-			cumulative, err = cumulative.Bitand(requires[i])
+			cumulative, err = tee.BitAnd(cumulative, requires[i])
 			if err != nil {
 				environment.GetLogger().Error("evaluateRemainingOptimisticRequires bitand failed", "err", err)
 				return false, err
@@ -153,7 +153,7 @@ func teeEvaluateRemainingOptimisticRequires(environment EVMEnvironment) (bool, e
 		ret := make([]byte, 32)
 		copy(ret[32-len(plaintext):], plaintext)
 
-		retVal := *new(big.Int).SetBytes(ret)
+		retVal := new(big.Int).SetBytes(ret)
 		return retVal.Uint64() != 0, err
 	}
 	return true, nil
