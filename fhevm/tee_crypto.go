@@ -143,6 +143,9 @@ func teeEvaluateRemainingOptimisticRequires(environment EVMEnvironment) (bool, e
 				return false, err
 			}
 		}
+		// TODO:
+		// Should replace the following part to use tee.DecryptToBigInt function declared in another PR(re-encrypt).
+		// BigInt construction from plaintext is duplicated in several places.
 		result, err := tee.Decrypt(cumulative)
 		if err != nil {
 			return false, err
