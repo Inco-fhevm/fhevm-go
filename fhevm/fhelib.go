@@ -402,6 +402,12 @@ var fhelibMethods = []*FheLibMethod{
 		requiredGasFunction: teeCastRequiredGas,
 		runFunction:         teeCastRun,
 	},
+	{
+		name:                "teeOptimisticRequire",
+		argTypes:            "(uint256)",
+		requiredGasFunction: teeOptimisticRequireRequiredGas,
+		runFunction:         teeOptimisticRequireRun,
+	},
 }
 
 func init() {

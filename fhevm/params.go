@@ -66,18 +66,20 @@ type GasCosts struct {
 	FheGetCiphertext  map[tfhe.FheUintType]uint64
 
 	// TEE Operations
-	TeeAddSub     map[tfhe.FheUintType]uint64
-	TeeMul        map[tfhe.FheUintType]uint64
-	TeeDiv        map[tfhe.FheUintType]uint64
-	TeeRem        map[tfhe.FheUintType]uint64
-	TeeEncrypt    map[tfhe.FheUintType]uint64
-	TeeDecrypt    map[tfhe.FheUintType]uint64
-	TeeComparison map[tfhe.FheUintType]uint64
-	TeeShift      map[tfhe.FheUintType]uint64
-	TeeNot        map[tfhe.FheUintType]uint64
-	TeeNeg        map[tfhe.FheUintType]uint64
-	TeeBitwiseOp  map[tfhe.FheUintType]uint64
-	TeeCast       uint64
+	TeeAddSub           map[tfhe.FheUintType]uint64
+	TeeMul              map[tfhe.FheUintType]uint64
+	TeeDiv              map[tfhe.FheUintType]uint64
+	TeeRem              map[tfhe.FheUintType]uint64
+	TeeEncrypt          map[tfhe.FheUintType]uint64
+	TeeDecrypt          map[tfhe.FheUintType]uint64
+	TeeComparison       map[tfhe.FheUintType]uint64
+	TeeShift            map[tfhe.FheUintType]uint64
+	TeeNot              map[tfhe.FheUintType]uint64
+	TeeNeg              map[tfhe.FheUintType]uint64
+	TeeBitwiseOp        map[tfhe.FheUintType]uint64
+	TeeCast             uint64
+	TeeOptRequire       map[tfhe.FheUintType]uint64
+	TeeOptRequireBitAnd map[tfhe.FheUintType]uint64
 }
 
 func DefaultGasCosts() GasCosts {
@@ -307,6 +309,23 @@ func DefaultGasCosts() GasCosts {
 			tfhe.FheUint16: 121,
 			tfhe.FheUint32: 150,
 			tfhe.FheUint64: 189,
+		},
+		// TODO: As of now, only support FheUint8. All optimistic require predicates are
+		// downcast to FheUint8 at the solidity level. Eventually move to ebool.
+		// If there is at least one optimistic require, we need to decrypt it as it was a normal FHE require.
+		// For every subsequent optimistic require, we need to bitand it with the current require value - that
+		// works, because we assume requires have a value of 0 or 1.
+		TeeOptRequire: map[tfhe.FheUintType]uint64{
+			tfhe.FheUint4:  170000,
+			tfhe.FheUint8:  170000,
+			tfhe.FheUint16: 180000,
+			tfhe.FheUint32: 190000,
+		},
+		TeeOptRequireBitAnd: map[tfhe.FheUintType]uint64{
+			tfhe.FheUint4:  20000,
+			tfhe.FheUint8:  20000,
+			tfhe.FheUint16: 20000,
+			tfhe.FheUint32: 20000,
 		},
 	}
 }
