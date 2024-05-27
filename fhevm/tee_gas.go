@@ -14,7 +14,7 @@ func teeOperationGas(op string, environment EVMEnvironment, input []byte, gasCos
 
 	isScalar, err := isScalarOp(input)
 	if err != nil {
-		logger.Error(fmt.Sprintf("%s can not detect if operator is meant to be scalar", op), "err", err, "input", hex.EncodeToString(input))
+		logger.Error(fmt.Sprintf("%s can not detect if operator was meant to be scalar", op), "err", err, "input", hex.EncodeToString(input))
 		return 0
 	}
 
@@ -33,7 +33,7 @@ func teeOperationGas(op string, environment EVMEnvironment, input []byte, gasCos
 	} else {
 		lhs, _, err = getScalarOperands(environment, input)
 		if err != nil {
-			logger.Error("fheAdd scalar inputs not verified", "err", err, "input", hex.EncodeToString(input))
+			logger.Error("scalar inputs not verified", "err", err, "input", hex.EncodeToString(input))
 			return 0
 		}
 	}
