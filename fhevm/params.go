@@ -315,17 +315,21 @@ func DefaultGasCosts() GasCosts {
 		// If there is at least one optimistic require, we need to decrypt it as it was a normal FHE require.
 		// For every subsequent optimistic require, we need to bitand it with the current require value - that
 		// works, because we assume requires have a value of 0 or 1.
+
+		// TODO:
+		// Need to review the gas amount. It doesn't include any decryption, encryption. It just access to memory level variables
+		// So put now small amount.
 		TeeOptRequire: map[tfhe.FheUintType]uint64{
-			tfhe.FheUint4:  170000,
-			tfhe.FheUint8:  170000,
-			tfhe.FheUint16: 180000,
-			tfhe.FheUint32: 190000,
+			tfhe.FheUint4:  50,
+			tfhe.FheUint8:  50,
+			tfhe.FheUint16: 50,
+			tfhe.FheUint32: 50,
 		},
 		TeeOptRequireBitAnd: map[tfhe.FheUintType]uint64{
-			tfhe.FheUint4:  20000,
-			tfhe.FheUint8:  20000,
-			tfhe.FheUint16: 20000,
-			tfhe.FheUint32: 20000,
+			tfhe.FheUint4:  100,
+			tfhe.FheUint8:  100,
+			tfhe.FheUint16: 100,
+			tfhe.FheUint32: 100,
 		},
 	}
 }
