@@ -40,3 +40,14 @@ func teeOperationGas(op string, environment EVMEnvironment, input []byte, gasCos
 
 	return gasCosts[lhs.fheUintType()]
 }
+
+func teeVerifyCiphertextRequiredGas(environment EVMEnvironment, input []byte) uint64 {
+	if len(input) <= 1 {
+		environment.GetLogger().Error(
+			"verifyCiphertext RequiredGas() input needs to contain a ciphertext and one byte for its type",
+			"len", len(input))
+		return 0
+	}
+	ctType := tfhe.FheUintType(input[len(input)-1])
+	return environment.FhevmParams().GasCosts.FheVerify[ctType]
+}

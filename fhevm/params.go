@@ -77,6 +77,7 @@ type GasCosts struct {
 	TeeNot        map[tfhe.FheUintType]uint64
 	TeeNeg        map[tfhe.FheUintType]uint64
 	TeeBitwiseOp  map[tfhe.FheUintType]uint64
+	TeeVerify     map[tfhe.FheUintType]uint64
 	TeeCast       uint64
 }
 
@@ -307,6 +308,15 @@ func DefaultGasCosts() GasCosts {
 			tfhe.FheUint16: 121,
 			tfhe.FheUint32: 150,
 			tfhe.FheUint64: 189,
+		},
+		// As of now, verification costs only cover ciphertext deserialization and assume there is no ZKPoK to verify.
+		TeeVerify: map[tfhe.FheUintType]uint64{
+			tfhe.FheBool:   200,
+			tfhe.FheUint4:  200,
+			tfhe.FheUint8:  200,
+			tfhe.FheUint16: 300,
+			tfhe.FheUint32: 400,
+			tfhe.FheUint64: 800,
 		},
 	}
 }
