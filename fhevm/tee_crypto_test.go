@@ -46,3 +46,75 @@ func TestTeeDecryptRun(t *testing.T) {
 		}
 	})
 }
+
+func TestTeeOptimisticRequireSuccess(t *testing.T) {
+	signature := "teeOptimisticRequire(uint256)"
+	rapid.Check(t, func(t *rapid.T) {
+		testcases := []struct {
+			typ     tfhe.FheUintType
+			require uint64
+		}{
+			{tfhe.FheUint8, uint64(1)},
+			{tfhe.FheUint8, uint64(1)},
+		}
+
+		environment := newTestEVMEnvironment()
+		depth := 1
+		environment.depth = depth
+		for _, tc := range testcases {
+			addr := common.Address{}
+			readOnly := false
+			ct, err := importTeePlaintextToEVM(environment, depth, tc.require, tc.typ)
+			if err != nil {
+				t.Fatalf(err.Error())
+			}
+
+			input := toLibPrecompileInput(signature, false, ct.GetHash())
+			_, err = FheLibRun(environment, addr, addr, input, readOnly)
+			if err != nil {
+				t.Fatalf(err.Error())
+			}
+		}
+
+		optReqResult, _ := teeEvaluateRemainingOptimisticRequires(environment)
+		if !optReqResult {
+			t.Fatalf("incorrect result, expected=%d, got=0", 1)
+		}
+	})
+}
+
+func TestTeeOptimisticRequireFail(t *testing.T) {
+	signature := "teeOptimisticRequire(uint256)"
+	rapid.Check(t, func(t *rapid.T) {
+		testcases := []struct {
+			typ     tfhe.FheUintType
+			require uint64
+		}{
+			{tfhe.FheUint8, uint64(1)},
+			{tfhe.FheUint8, uint64(0)},
+		}
+
+		environment := newTestEVMEnvironment()
+		depth := 1
+		environment.depth = depth
+		for _, tc := range testcases {
+			addr := common.Address{}
+			readOnly := false
+			ct, err := importTeePlaintextToEVM(environment, depth, tc.require, tc.typ)
+			if err != nil {
+				t.Fatalf(err.Error())
+			}
+
+			input := toLibPrecompileInput(signature, false, ct.GetHash())
+			_, err = FheLibRun(environment, addr, addr, input, readOnly)
+			if err != nil {
+				t.Fatalf(err.Error())
+			}
+		}
+
+		optReqResult, _ := teeEvaluateRemainingOptimisticRequires(environment)
+		if optReqResult {
+			t.Fatalf("incorrect result, expected=%d, got=0", 1)
+		}
+	})
+}
