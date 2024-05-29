@@ -106,14 +106,14 @@ func teeReencryptRun(environment EVMEnvironment, caller common.Address, addr com
 	if ct != nil {
 		otelDescribeOperandsFheTypes(runSpan, ct.fheUintType())
 
-		decryptedValue, err := tee.DecryptToBigInt(ct.ciphertext)
-
+		plainText, err := tee.Decrypt(ct.ciphertext)
 		if err != nil {
 			logger.Error("reencrypt decryption failed", "err", err)
 			return nil, err
 		}
-		pubKey := input[32:64]
+		decryptedValue := new(big.Int).SetBytes(plainText.Value)
 
+		pubKey := input[32:64]
 		reencryptedValue, err := encryptToUserKey(decryptedValue, pubKey)
 		if err != nil {
 			logger.Error("reencrypt failed to encrypt to user key", "err", err)
