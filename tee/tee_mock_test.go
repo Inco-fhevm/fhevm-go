@@ -2,7 +2,6 @@ package tee_test
 
 import (
 	"bytes"
-	"math/big"
 	"testing"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -63,47 +62,6 @@ func TestUniqueCiphertexts(t *testing.T) {
 		// Make sure the hashes (handles) are different
 		if bytes.Equal(b.GetHash().Bytes(), c.GetHash().Bytes()) {
 			t.Fatalf("expected different hashes, got %v", b.GetHash())
-		}
-	})
-}
-
-func TestBitAndCiphertext(t *testing.T) {
-	rapid.Check(t, func(t *rapid.T) {
-		//
-		one := big.NewInt(1).Bytes()
-		zero := big.NewInt(0).Bytes()
-		teePlaintextOne := tee.NewTeePlaintext(one, tfhe.FheUint8, common.Address{})
-		teePlaintextZero := tee.NewTeePlaintext(zero, tfhe.FheUint8, common.Address{})
-		ctOne, err := tee.Encrypt(teePlaintextOne)
-		if err != nil {
-			t.Fatal(err)
-		}
-		ctZero, err := tee.Encrypt(teePlaintextZero)
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		// Encrypt twice the same plaintext
-		ctResult, err := tee.BitAnd(&ctOne, &ctZero)
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		result, err := tee.Decrypt(ctResult)
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		plaintext := result.Value
-		// Always return a 32-byte big-endian integer.
-		ret := make([]byte, 32)
-		copy(ret[32-len(plaintext):], plaintext)
-
-		retVal := new(big.Int).SetBytes(ret)
-
-		// Make sure the ciphertexts are different
-		if retVal.Int64() != big.NewInt(0).Int64() {
-			t.Fatalf("expected different result, got %d", retVal.Int64())
 		}
 	})
 }

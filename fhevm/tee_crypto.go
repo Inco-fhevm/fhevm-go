@@ -134,30 +134,21 @@ func teeEvaluateRemainingOptimisticRequires(environment EVMEnvironment) (bool, e
 	length := len(requires)
 	defer func() { environment.FhevmData().resetTeeOptimisticRequires() }()
 	if length != 0 {
-		var cumulative *tfhe.TfheCiphertext = requires[0]
-		var err error
-		for i := 1; i < length; i++ {
-			cumulative, err = tee.BitAnd(cumulative, requires[i])
+		cumulative := uint64(1)
+		for i := 0; i < length; i++ {
+			lp, err := tee.Decrypt(requires[i])
 			if err != nil {
 				environment.GetLogger().Error("evaluateRemainingOptimisticRequires bitand failed", "err", err)
 				return false, err
 			}
-		}
-		// TODO:
-		// Should replace the following part to use tee.DecryptToBigInt function declared in another PR(re-encrypt).
-		// BigInt construction from plaintext is duplicated in several places.
-		result, err := tee.Decrypt(cumulative)
-		if err != nil {
-			return false, err
-		}
 
-		plaintext := result.Value
-		// Always return a 32-byte big-endian integer.
-		ret := make([]byte, 32)
-		copy(ret[32-len(plaintext):], plaintext)
-
-		retVal := new(big.Int).SetBytes(ret)
-		return retVal.Uint64() != 0, err
+			l := new(big.Int).SetBytes(lp.Value).Uint64()
+			cumulative = cumulative & l
+			// if it is 0 at any moment, it can return with result false
+			if cumulative == 0 {
+				return false, nil
+			}
+		}
 	}
 	return true, nil
 }
