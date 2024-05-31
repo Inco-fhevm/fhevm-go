@@ -35,7 +35,7 @@ func TestTeeDecryptRun(t *testing.T) {
 			}
 
 			input := toLibPrecompileInput(signature, false, ct.GetHash())
-			out, err := FheLibRun(environment, addr, addr, input, readOnly)
+			out, err := TeeLibRun(environment, addr, addr, input, readOnly)
 			if err != nil {
 				t.Fatalf(err.Error())
 			}
