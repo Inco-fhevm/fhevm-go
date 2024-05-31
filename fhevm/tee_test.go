@@ -38,7 +38,7 @@ func teeOperationHelper(t *testing.T, fheUintType tfhe.FheUintType, lhs, rhs, ex
 		input = toLibPrecompileInput(signature, true, lhsCt.GetHash(), common.BytesToHash(valueBz))
 	}
 
-	out, err := FheLibRun(environment, addr, addr, input, readOnly)
+	out, err := TeeLibRun(environment, addr, addr, input, readOnly)
 	if err != nil {
 		t.Fatalf(err.Error())
 	}
@@ -93,7 +93,7 @@ func teeSelectOperationHelper(t *testing.T, fheUintType tfhe.FheUintType, fhs bo
 	}
 
 	input := toLibPrecompileInput(signature, false, fhsCt.GetHash(), shsCt.GetHash(), thsCt.GetHash())
-	out, err := FheLibRun(environment, addr, addr, input, readOnly)
+	out, err := TeeLibRun(environment, addr, addr, input, readOnly)
 	if err != nil {
 		t.Fatalf(err.Error())
 	}
@@ -127,7 +127,7 @@ func teeNegNotOperationHelper(t *testing.T, fheUintType tfhe.FheUintType, chs, e
 	}
 
 	input := toLibPrecompileInput(signature, false, chsCt.GetHash())
-	out, err := FheLibRun(environment, addr, addr, input, readOnly)
+	out, err := TeeLibRun(environment, addr, addr, input, readOnly)
 	if err != nil {
 		t.Fatalf(err.Error())
 	}
@@ -185,7 +185,7 @@ func teeCastHelper(t *testing.T, inputType tfhe.FheUintType, outputType tfhe.Fhe
 	input = append(input, signatureBytes...)
 	input = append(input, inCt.GetHash().Bytes()...)
 	input = append(input, byte(outputType))
-	out, err := FheLibRun(environment, addr, addr, input, readOnly)
+	out, err := TeeLibRun(environment, addr, addr, input, readOnly)
 	if err != nil {
 		t.Fatalf(err.Error())
 	}
