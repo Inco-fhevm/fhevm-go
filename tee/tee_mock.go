@@ -165,6 +165,7 @@ func MarshalTfheType(value any, typ tfhe.FheUintType) ([]byte, error) {
 			resultBz[0] = byte(value)
 			return resultBz, nil
 		case tfhe.FheUint4:
+			value = value & 0x0f
 			return []byte{byte(value)}, nil
 		case tfhe.FheUint8:
 			resultBz := []byte{byte(value)}
