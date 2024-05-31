@@ -110,7 +110,7 @@ func TeeLibRequiredGas(environment EVMEnvironment, input []byte) uint64 {
 	// first 4 bytes are for the function signature
 	signature := binary.BigEndian.Uint32(input[0:4])
 
-	fheLibMethod, found := GetTeeLibMethod(signature)
+	teeLibMethod, found := GetTeeLibMethod(signature)
 	if !found {
 		err := errors.New("precompile method not found")
 		logger.Error("fheLib precompile error", "err", err, "input", hex.EncodeToString(input))
@@ -118,7 +118,7 @@ func TeeLibRequiredGas(environment EVMEnvironment, input []byte) uint64 {
 	}
 	// we remove function signature
 	input = input[4:]
-	return fheLibMethod.RequiredGas(environment, input)
+	return teeLibMethod.RequiredGas(environment, input)
 }
 
 // TeeLibRun is the entry point for go-ethereum's PrecompiledContract#Run
@@ -127,16 +127,16 @@ func TeeLibRun(environment EVMEnvironment, caller common.Address, addr common.Ad
 	logger := environment.GetLogger()
 	if len(input) < 4 {
 		err := errors.New("input must contain at least 4 bytes for method signature")
-		logger.Error("fheLib precompile error", "err", err, "input", hex.EncodeToString(input))
+		logger.Error("teeLib precompile error", "err", err, "input", hex.EncodeToString(input))
 		return nil, err
 	}
 	// first 4 bytes are for the function signature
 	signature := binary.BigEndian.Uint32(input[0:4])
 
-	fheLibMethod, found := GetTeeLibMethod(signature)
+	teeLibMethod, found := GetTeeLibMethod(signature)
 	if !found {
 		err := errors.New("precompile method not found")
-		logger.Error("fheLib precompile error", "err", err, "input", hex.EncodeToString(input))
+		logger.Error("teeLib precompile error", "err", err, "input", hex.EncodeToString(input))
 		return nil, err
 	}
 	// remove function signature
@@ -144,14 +144,14 @@ func TeeLibRun(environment EVMEnvironment, caller common.Address, addr common.Ad
 	// trace function execution
 
 	if ctx := environment.OtelContext(); ctx != nil {
-		_, span := otel.Tracer("fhevm").Start(ctx, fheLibMethod.name)
-		ret, err = fheLibMethod.Run(environment, caller, addr, input, readOnly, span)
+		_, span := otel.Tracer("fhevm").Start(ctx, teeLibMethod.name)
+		ret, err = teeLibMethod.Run(environment, caller, addr, input, readOnly, span)
 		if err != nil {
 			span.RecordError(err)
 		}
 		span.End()
 	} else {
-		ret, err = fheLibMethod.Run(environment, caller, addr, input, readOnly, nil)
+		ret, err = teeLibMethod.Run(environment, caller, addr, input, readOnly, nil)
 	}
 
 	return
