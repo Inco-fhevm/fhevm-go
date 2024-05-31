@@ -2,7 +2,7 @@ package fhevm
 
 import "encoding/hex"
 
-func fheAddSubRequiredGas(environment EVMEnvironment, input []byte) uint64 {
+func fheAddSubRequiredGas(environment EVMEnvironment, suppliedGas uint64, input []byte) uint64 {
 	input = input[:minInt(65, len(input))]
 
 	logger := environment.GetLogger()
@@ -33,7 +33,7 @@ func fheAddSubRequiredGas(environment EVMEnvironment, input []byte) uint64 {
 	return environment.FhevmParams().GasCosts.FheAddSub[lhs.fheUintType()]
 }
 
-func fheMulRequiredGas(environment EVMEnvironment, input []byte) uint64 {
+func fheMulRequiredGas(environment EVMEnvironment, suppliedGas uint64, input []byte) uint64 {
 	input = input[:minInt(65, len(input))]
 
 	logger := environment.GetLogger()
@@ -64,7 +64,7 @@ func fheMulRequiredGas(environment EVMEnvironment, input []byte) uint64 {
 	}
 }
 
-func fheDivRequiredGas(environment EVMEnvironment, input []byte) uint64 {
+func fheDivRequiredGas(environment EVMEnvironment, suppliedGas uint64, input []byte) uint64 {
 	input = input[:minInt(65, len(input))]
 
 	logger := environment.GetLogger()
@@ -87,7 +87,7 @@ func fheDivRequiredGas(environment EVMEnvironment, input []byte) uint64 {
 	}
 }
 
-func fheRemRequiredGas(environment EVMEnvironment, input []byte) uint64 {
+func fheRemRequiredGas(environment EVMEnvironment, suppliedGas uint64, input []byte) uint64 {
 	input = input[:minInt(65, len(input))]
 
 	logger := environment.GetLogger()

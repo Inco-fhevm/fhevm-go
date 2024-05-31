@@ -43,7 +43,7 @@ func init() {
 	}
 }
 
-func FheLibRequiredGas(environment EVMEnvironment, input []byte) uint64 {
+func FheLibRequiredGas(environment EVMEnvironment, suppliedGas uint64, input []byte) uint64 {
 	logger := environment.GetLogger()
 	if len(input) < 4 {
 		err := errors.New("input must contain at least 4 bytes for method signature")
@@ -61,7 +61,7 @@ func FheLibRequiredGas(environment EVMEnvironment, input []byte) uint64 {
 	}
 	// we remove function signature
 	input = input[4:]
-	return fheLibMethod.RequiredGas(environment, input)
+	return fheLibMethod.RequiredGas(environment, suppliedGas, input)
 }
 
 func FheLibRun(environment EVMEnvironment, caller common.Address, addr common.Address, input []byte, readOnly bool) (ret []byte, err error) {

@@ -35,6 +35,7 @@ type EVMEnvironment interface {
 	FhevmData() *FhevmData
 	FhevmParams() *FhevmParams
 
+	GasLimit() uint64
 	// This should return the context used for OpenTelemetry in the current EVM.
 	// It should be considered the root context for every op that runs in the EVM, and all spans created from this context
 	// would be child spans for what has been already created using the context.
