@@ -15,8 +15,9 @@ func TestTeePadRequiredGas(t *testing.T) {
 			expected    uint64
 		}{
 			{40, *uint256.NewInt(20), 0},
-			{90, *uint256.NewInt(110), 90},
+			{90, *uint256.NewInt(110), 100},
 			{10, *uint256.NewInt(90), 0},
+			{50, *uint256.NewInt(90), 40},
 		}
 		for _, tc := range testcases {
 			environment := newTestEVMEnvironment()

@@ -14,16 +14,14 @@ func teePadGasRequiredGas(environment EVMEnvironment, suppliedGas uint64, input 
 	gasLimit := environment.GasLimit()
 	consumedGas := gasLimit - suppliedGas
 
-	padTo := &big.Int{}
-	padTo.SetBytes(input)
+	padTo := new(big.Int).SetBytes(input)
 
 	if consumedGas > padTo.Uint64() {
 		return 0
-	} else if padTo.Uint64() > gasLimit {
-		return suppliedGas
-	} else {
-		return padTo.Uint64() - consumedGas
 	}
+
+	return padTo.Uint64() - consumedGas
+
 }
 
 func teePadGasRun(environment EVMEnvironment, caller common.Address, addr common.Address, input []byte, readOnly bool, runSpan trace.Span) ([]byte, error) {
