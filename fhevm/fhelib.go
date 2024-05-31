@@ -12,6 +12,9 @@ import (
 )
 
 // A method available in the fhelib precompile that can run and estimate gas
+// We use the same struct for FHE and TEE operations. It's current called
+// FheLibMethod, to mirror the original Zama code, but it should thought as
+// a generic precompile method.
 type FheLibMethod struct {
 	// name of the fhelib function
 	name string
