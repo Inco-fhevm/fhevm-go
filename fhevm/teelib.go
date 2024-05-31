@@ -3,6 +3,11 @@ package fhevm
 // Mapping between function signatures and the functions to call
 var signatureToTeeLibMethod = map[uint32]*FheLibMethod{}
 
+func GetTeeLibMethod(signature uint32) (fheLibMethod *FheLibMethod, found bool) {
+	fheLibMethod, found = signatureToFheLibMethod[signature]
+	return
+}
+
 // All methods available in the teelib precompile
 var teelibMethods = []*FheLibMethod{
 	// TEE operations
