@@ -1,6 +1,7 @@
 package fhevm
 
 import (
+	"errors"
 	"fmt"
 	"math/big"
 
@@ -77,7 +78,7 @@ func teeMaxRun(environment EVMEnvironment, caller common.Address, addr common.Ad
 func teeSelectRun(environment EVMEnvironment, caller common.Address, addr common.Address, input []byte, readOnly bool, runSpan trace.Span) ([]byte, error) {
 	logger := environment.GetLogger()
 
-	p1, p2, _, h1, h2, h3, err := extract3Operands("teeSelect", environment, input, runSpan)
+	p1, p2, p3, h1, h2, h3, err := extract3Operands("teeSelect", environment, input, runSpan)
 	if err != nil {
 		logger.Error("teeSelect", "failed", "err", err)
 		return nil, err
@@ -86,6 +87,12 @@ func teeSelectRun(environment EVMEnvironment, caller common.Address, addr common
 	// If we are doing gas estimation, skip execution and insert a random ciphertext as a result.
 	if !environment.IsCommitting() && !environment.IsEthCall() {
 		return importRandomCiphertext(environment, p2.FheUintType), nil
+	}
+
+	if h2.fheUintType() != h3.fheUintType() {
+		msg := "fheIfThenElse operand type mismatch"
+		logger.Error(msg, "second", h2.fheUintType(), "third", h3.fheUintType())
+		return nil, errors.New(msg)
 	}
 
 	// TODO ref: https://github.com/Inco-fhevm/inco-monorepo/issues/6
@@ -103,7 +110,7 @@ func teeSelectRun(environment EVMEnvironment, caller common.Address, addr common
 	// result back to the FheUintType.
 	var result big.Int
 	s := big.NewInt(0).SetBytes(p2.Value)
-	t := big.NewInt(0).SetBytes(p2.Value)
+	t := big.NewInt(0).SetBytes(p3.Value)
 	if p1.Value[0] == 1 {
 		result.Set(s)
 	} else {
