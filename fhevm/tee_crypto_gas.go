@@ -34,3 +34,19 @@ func teeDecryptRequiredGas(environment EVMEnvironment, input []byte) uint64 {
 	}
 	return environment.FhevmParams().GasCosts.TeeDecrypt[ct.fheUintType()]
 }
+
+func teeReencryptRequiredGas(environment EVMEnvironment, input []byte) uint64 {
+	input = input[:minInt(64, len(input))]
+
+	logger := environment.GetLogger()
+	if len(input) != 64 {
+		logger.Error("reencrypt RequiredGas() input len must be 64 bytes", "input", hex.EncodeToString(input), "len", len(input))
+		return 0
+	}
+	ct := getVerifiedCiphertext(environment, common.BytesToHash(input[0:32]))
+	if ct == nil {
+		logger.Error("reencrypt RequiredGas() input doesn't point to verified ciphertext", "input", hex.EncodeToString(input))
+		return 0
+	}
+	return environment.FhevmParams().GasCosts.TeeReencrypt[ct.fheUintType()]
+}

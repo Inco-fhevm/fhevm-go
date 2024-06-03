@@ -46,3 +46,36 @@ func TestTeeDecryptRun(t *testing.T) {
 		}
 	})
 }
+
+func TestTeeReEncryptRun(t *testing.T) {
+	signature := "teeReencrypt(uint256,uint256)"
+	rapid.Check(t, func(t *rapid.T) {
+		testcases := []struct {
+			typ      tfhe.FheUintType
+			expected uint64
+		}{
+			{tfhe.FheUint4, uint64(rapid.Uint8().Draw(t, "expected"))},
+			{tfhe.FheUint8, uint64(rapid.Uint8().Draw(t, "expected"))},
+			{tfhe.FheUint16, uint64(rapid.Uint16().Draw(t, "expected"))},
+			{tfhe.FheUint32, uint64(rapid.Uint32().Draw(t, "expected"))},
+			{tfhe.FheUint64, uint64(rapid.Uint64().Draw(t, "expected"))},
+		}
+		for _, tc := range testcases {
+			depth := 1
+			environment := newTestEVMEnvironmentWithEthCall()
+			environment.depth = depth
+			addr := common.Address{}
+			readOnly := false
+			ct, err := importTeePlaintextToEVM(environment, depth, tc.expected, tc.typ)
+			if err != nil {
+				t.Fatalf(err.Error())
+			}
+
+			input := toLibPrecompileInput(signature, false, ct.GetHash())
+			_, err = FheLibRun(environment, addr, addr, input, readOnly)
+			if err != nil {
+				t.Fatalf("Reencrypt error: %s", err.Error())
+			}
+		}
+	})
+}

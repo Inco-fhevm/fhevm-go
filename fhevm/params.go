@@ -78,6 +78,7 @@ type GasCosts struct {
 	TeeNeg        map[tfhe.FheUintType]uint64
 	TeeBitwiseOp  map[tfhe.FheUintType]uint64
 	TeeCast       uint64
+	TeeReencrypt  map[tfhe.FheUintType]uint64
 }
 
 func DefaultGasCosts() GasCosts {
@@ -307,6 +308,14 @@ func DefaultGasCosts() GasCosts {
 			tfhe.FheUint16: 121,
 			tfhe.FheUint32: 150,
 			tfhe.FheUint64: 189,
+		},
+		// TODO: Costs will depend on the complexity of doing reencryption/decryption by the oracle.
+		TeeReencrypt: map[tfhe.FheUintType]uint64{
+			tfhe.FheBool:   1000,
+			tfhe.FheUint4:  1000,
+			tfhe.FheUint8:  1000,
+			tfhe.FheUint16: 1100,
+			tfhe.FheUint32: 1200,
 		},
 	}
 }
