@@ -5,6 +5,7 @@ import (
 	"encoding/binary"
 	"encoding/json"
 	"fmt"
+	"math/big"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
@@ -117,4 +118,18 @@ func Decrypt(ct *tfhe.TfheCiphertext) (TeePlaintext, error) {
 	}
 
 	return plaintext, nil
+}
+
+func DecryptToBigInt(ct *tfhe.TfheCiphertext) (*big.Int, error) {
+	decryptedValue, err := Decrypt(ct)
+	if err != nil {
+		return nil, err
+	}
+
+	plaintext := decryptedValue.Value
+	// Always return a 32-byte big-endian integer.
+	ret := make([]byte, 32)
+	copy(ret[32-len(plaintext):], plaintext)
+
+	return new(big.Int).SetBytes(ret), nil
 }
