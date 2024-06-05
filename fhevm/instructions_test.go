@@ -160,6 +160,7 @@ type MockEVMEnvironment struct {
 	ethCall     bool
 	readOnly    bool
 	fhevmParams FhevmParams
+	gasLimit    uint64
 }
 
 func (*MockEVMEnvironment) OtelContext() context.Context {
@@ -229,6 +230,10 @@ func (environment *MockEVMEnvironment) FhevmParams() *FhevmParams {
 
 func (environment *MockEVMEnvironment) EVMEnvironment() EVMEnvironment {
 	return environment
+}
+
+func (environment *MockEVMEnvironment) GasLimit() uint64 {
+	return environment.gasLimit
 }
 
 func newTestEVMEnvironment() *MockEVMEnvironment {

@@ -9,7 +9,7 @@ import (
 	"github.com/zama-ai/fhevm-go/fhevm/tfhe"
 )
 
-func fheRandRequiredGas(environment EVMEnvironment, input []byte) uint64 {
+func fheRandRequiredGas(environment EVMEnvironment, suppliedGas uint64, input []byte) uint64 {
 	input = input[:minInt(1, len(input))]
 
 	logger := environment.GetLogger()
@@ -40,7 +40,7 @@ func parseRandUpperBoundInput(input []byte) (randType tfhe.FheUintType, upperBou
 	return randType, upperBound, nil
 }
 
-func fheRandBoundedRequiredGas(environment EVMEnvironment, input []byte) uint64 {
+func fheRandBoundedRequiredGas(environment EVMEnvironment, suppliedGas uint64, input []byte) uint64 {
 	input = input[:minInt(33, len(input))]
 
 	logger := environment.GetLogger()
