@@ -243,6 +243,12 @@ func newTestEVMEnvironment() *MockEVMEnvironment {
 	return &MockEVMEnvironment{fhevmData: &fhevmData, stateDb: state, commit: true, fhevmParams: DefaultFhevmParams()}
 }
 
+func newTestEVMEnvironmentWithEthCall() *MockEVMEnvironment {
+	mockEVM := newTestEVMEnvironment()
+	mockEVM.ethCall = true
+	return mockEVM
+}
+
 func TestProtectedStorageSstoreSload(t *testing.T) {
 	environment := newTestEVMEnvironment()
 	pc := uint64(0)

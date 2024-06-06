@@ -88,3 +88,49 @@ func teeDecryptRun(environment EVMEnvironment, caller common.Address, addr commo
 	copy(ret[32-len(plaintext):], plaintext)
 	return ret, nil
 }
+
+func teeReencryptRun(environment EVMEnvironment, caller common.Address, addr common.Address, input []byte, readOnly bool, runSpan trace.Span) ([]byte, error) {
+	input = input[:minInt(64, len(input))]
+	logger := environment.GetLogger()
+	if !environment.IsEthCall() {
+		msg := "reencrypt only supported on EthCall"
+		logger.Error(msg)
+		return nil, errors.New(msg)
+	}
+	if len(input) != 64 {
+		msg := "reencrypt input len must be 64 bytes"
+		logger.Error(msg, "input", hex.EncodeToString(input), "len", len(input))
+		return nil, errors.New(msg)
+	}
+	ct := getVerifiedCiphertext(environment, common.BytesToHash(input[0:32]))
+	if ct != nil {
+		otelDescribeOperandsFheTypes(runSpan, ct.fheUintType())
+
+		plainText, err := tee.Decrypt(ct.ciphertext)
+		if err != nil {
+			logger.Error("reencrypt decryption failed", "err", err)
+			return nil, err
+		}
+		decryptedValue := new(big.Int).SetBytes(plainText.Value)
+
+		pubKey := input[32:64]
+		reencryptedValue, err := encryptToUserKey(decryptedValue, pubKey)
+		if err != nil {
+			logger.Error("reencrypt failed to encrypt to user key", "err", err)
+			return nil, err
+		}
+
+		// TODO: decide if `res.Signature` should be verified here
+
+		logger.Info("reencrypt success", "input", hex.EncodeToString(input), "callerAddr", caller, "reencryptedValue", reencryptedValue, "len", len(reencryptedValue))
+		reencryptedValue = toEVMBytes(reencryptedValue)
+		// pad according to abi specification, first add offset to the dynamic bytes argument
+		outputBytes := make([]byte, 32, len(reencryptedValue)+32)
+		outputBytes[31] = 0x20
+		outputBytes = append(outputBytes, reencryptedValue...)
+		return padArrayTo32Multiple(outputBytes), nil
+	}
+	msg := "reencrypt unverified ciphertext handle"
+	logger.Error(msg, "input", hex.EncodeToString(input))
+	return nil, errors.New(msg)
+}
