@@ -48,7 +48,7 @@ func (sp TeePlaintext) AsUint8() uint8 {
 		panic(fmt.Sprintf("Expected FheUint4 or FheUint8, got %s", sp.FheUintType))
 	}
 
-	return sp.Value[0]
+	return sp.Value[len(sp.Value)-1]
 }
 
 // AsUint16 returns the plaintext as a uint16.
