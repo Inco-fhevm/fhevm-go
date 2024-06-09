@@ -227,6 +227,12 @@ func TestTeeSelectRun(t *testing.T) {
 		{tfhe.FheUint32, true, big.NewInt(1333337), big.NewInt(1337), big.NewInt(1333337)},
 		{tfhe.FheUint64, true, big.NewInt(13333377777777777), big.NewInt(133377777777), big.NewInt(13333377777777777)},
 		{tfhe.FheUint160, true, a, b, a},
+		{tfhe.FheUint4, false, big.NewInt(2), big.NewInt(1), big.NewInt(1)},
+		{tfhe.FheUint8, false, big.NewInt(2), big.NewInt(1), big.NewInt(1)},
+		{tfhe.FheUint16, false, big.NewInt(4283), big.NewInt(1337), big.NewInt(1337)},
+		{tfhe.FheUint32, false, big.NewInt(1333337), big.NewInt(1337), big.NewInt(1337)},
+		{tfhe.FheUint64, false, big.NewInt(13333377777777777), big.NewInt(133377777777), big.NewInt(133377777777)},
+		{tfhe.FheUint160, false, a, b, b},
 	}
 	for _, tc := range testcases {
 		t.Run(fmt.Sprintf("teeSelect with %s", tc.typ), func(t *testing.T) {
