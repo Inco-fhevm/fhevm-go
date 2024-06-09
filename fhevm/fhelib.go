@@ -20,7 +20,7 @@ type FheLibMethod struct {
 	name string
 	// types of the arguments that the fhelib function take. format is "(type1,type2...)" (e.g "(uint256,bytes1)")
 	argTypes            string
-	requiredGasFunction func(environment EVMEnvironment, input []byte) uint64
+	requiredGasFunction func(environment EVMEnvironment, suppliedGas uint64, input []byte) uint64
 	runFunction         func(environment EVMEnvironment, caller common.Address, addr common.Address, input []byte, readOnly bool, runSpan trace.Span) ([]byte, error)
 }
 
@@ -37,8 +37,8 @@ func (fheLibMethod *FheLibMethod) Signature() uint32 {
 	return makeKeccakSignature(fheLibMethod.name + fheLibMethod.argTypes)
 }
 
-func (fheLibMethod *FheLibMethod) RequiredGas(environment EVMEnvironment, input []byte) uint64 {
-	return fheLibMethod.requiredGasFunction(environment, input)
+func (fheLibMethod *FheLibMethod) RequiredGas(environment EVMEnvironment, suppliedGas uint64, input []byte) uint64 {
+	return fheLibMethod.requiredGasFunction(environment, suppliedGas, input)
 }
 
 func (fheLibMethod *FheLibMethod) Run(environment EVMEnvironment, caller common.Address, addr common.Address, input []byte, readOnly bool, runSpan trace.Span) ([]byte, error) {

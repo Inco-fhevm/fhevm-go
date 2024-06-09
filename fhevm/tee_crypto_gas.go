@@ -7,7 +7,7 @@ import (
 	"github.com/zama-ai/fhevm-go/fhevm/tfhe"
 )
 
-func teeEncryptRequiredGas(environment EVMEnvironment, input []byte) uint64 {
+func teeEncryptRequiredGas(environment EVMEnvironment, suppliedGas uint64, input []byte) uint64 {
 	input = input[:minInt(33, len(input))]
 
 	logger := environment.GetLogger()
@@ -19,7 +19,7 @@ func teeEncryptRequiredGas(environment EVMEnvironment, input []byte) uint64 {
 	return environment.FhevmParams().GasCosts.FheTrivialEncrypt[encryptToType]
 }
 
-func teeDecryptRequiredGas(environment EVMEnvironment, input []byte) uint64 {
+func teeDecryptRequiredGas(environment EVMEnvironment, suppliedGas uint64, input []byte) uint64 {
 	input = input[:minInt(32, len(input))]
 
 	logger := environment.GetLogger()

@@ -6,7 +6,7 @@ import (
 	"github.com/zama-ai/fhevm-go/fhevm/tfhe"
 )
 
-func fheLeRequiredGas(environment EVMEnvironment, input []byte) uint64 {
+func fheLeRequiredGas(environment EVMEnvironment, suppliedGas uint64, input []byte) uint64 {
 	input = input[:minInt(65, len(input))]
 
 	logger := environment.GetLogger()
@@ -36,12 +36,12 @@ func fheLeRequiredGas(environment EVMEnvironment, input []byte) uint64 {
 	return environment.FhevmParams().GasCosts.FheLe[lhs.fheUintType()]
 }
 
-func fheLtRequiredGas(environment EVMEnvironment, input []byte) uint64 {
+func fheLtRequiredGas(environment EVMEnvironment, suppliedGas uint64, input []byte) uint64 {
 	// Implement in terms of le, because le and lt costs are currently the same.
-	return fheLeRequiredGas(environment, input)
+	return fheLeRequiredGas(environment, suppliedGas, input)
 }
 
-func fheEqRequiredGas(environment EVMEnvironment, input []byte) uint64 {
+func fheEqRequiredGas(environment EVMEnvironment, suppliedGas uint64, input []byte) uint64 {
 	input = input[:minInt(65, len(input))]
 
 	logger := environment.GetLogger()
@@ -71,22 +71,22 @@ func fheEqRequiredGas(environment EVMEnvironment, input []byte) uint64 {
 	return environment.FhevmParams().GasCosts.FheEq[lhs.fheUintType()]
 }
 
-func fheGeRequiredGas(environment EVMEnvironment, input []byte) uint64 {
+func fheGeRequiredGas(environment EVMEnvironment, suppliedGas uint64, input []byte) uint64 {
 	// Implement in terms of le, because comparison costs are currently the same.
-	return fheLeRequiredGas(environment, input)
+	return fheLeRequiredGas(environment, suppliedGas, input)
 }
 
-func fheGtRequiredGas(environment EVMEnvironment, input []byte) uint64 {
+func fheGtRequiredGas(environment EVMEnvironment, suppliedGas uint64, input []byte) uint64 {
 	// Implement in terms of le, because comparison costs are currently the same.
-	return fheLeRequiredGas(environment, input)
+	return fheLeRequiredGas(environment, suppliedGas, input)
 }
 
-func fheNeRequiredGas(environment EVMEnvironment, input []byte) uint64 {
+func fheNeRequiredGas(environment EVMEnvironment, suppliedGas uint64, input []byte) uint64 {
 	// Implement in terms of le, because comparison costs are currently the same.
-	return fheEqRequiredGas(environment, input)
+	return fheEqRequiredGas(environment, suppliedGas, input)
 }
 
-func fheMinRequiredGas(environment EVMEnvironment, input []byte) uint64 {
+func fheMinRequiredGas(environment EVMEnvironment, suppliedGas uint64, input []byte) uint64 {
 	input = input[:minInt(65, len(input))]
 
 	logger := environment.GetLogger()
@@ -117,12 +117,12 @@ func fheMinRequiredGas(environment EVMEnvironment, input []byte) uint64 {
 	}
 }
 
-func fheMaxRequiredGas(environment EVMEnvironment, input []byte) uint64 {
+func fheMaxRequiredGas(environment EVMEnvironment, suppliedGas uint64, input []byte) uint64 {
 	// Implement in terms of min, because costs are currently the same.
-	return fheMinRequiredGas(environment, input)
+	return fheMinRequiredGas(environment, suppliedGas, input)
 }
 
-func fheIfThenElseRequiredGas(environment EVMEnvironment, input []byte) uint64 {
+func fheIfThenElseRequiredGas(environment EVMEnvironment, suppliedGas uint64, input []byte) uint64 {
 	input = input[:minInt(96, len(input))]
 
 	logger := environment.GetLogger()

@@ -7,7 +7,7 @@ import (
 	"github.com/zama-ai/fhevm-go/fhevm/tfhe"
 )
 
-func verifyCiphertextRequiredGas(environment EVMEnvironment, input []byte) uint64 {
+func verifyCiphertextRequiredGas(environment EVMEnvironment, suppliedGas uint64, input []byte) uint64 {
 	if len(input) <= 1 {
 		environment.GetLogger().Error(
 			"verifyCiphertext RequiredGas() input needs to contain a ciphertext and one byte for its type",
@@ -18,7 +18,7 @@ func verifyCiphertextRequiredGas(environment EVMEnvironment, input []byte) uint6
 	return environment.FhevmParams().GasCosts.FheVerify[ctType]
 }
 
-func reencryptRequiredGas(environment EVMEnvironment, input []byte) uint64 {
+func reencryptRequiredGas(environment EVMEnvironment, suppliedGas uint64, input []byte) uint64 {
 	input = input[:minInt(64, len(input))]
 
 	logger := environment.GetLogger()
@@ -34,7 +34,7 @@ func reencryptRequiredGas(environment EVMEnvironment, input []byte) uint64 {
 	return environment.FhevmParams().GasCosts.FheReencrypt[ct.fheUintType()]
 }
 
-func getCiphertextRequiredGas(environment EVMEnvironment, input []byte) uint64 {
+func getCiphertextRequiredGas(environment EVMEnvironment, suppliedGas uint64, input []byte) uint64 {
 	input = input[:minInt(64, len(input))]
 
 	logger := environment.GetLogger()
@@ -53,7 +53,7 @@ func getCiphertextRequiredGas(environment EVMEnvironment, input []byte) uint64 {
 	return environment.FhevmParams().GasCosts.FheGetCiphertext[metadata.fheUintType]
 }
 
-func castRequiredGas(environment EVMEnvironment, input []byte) uint64 {
+func castRequiredGas(environment EVMEnvironment, suppliedGas uint64, input []byte) uint64 {
 	input = input[:minInt(33, len(input))]
 
 	if len(input) != 33 {
@@ -65,7 +65,7 @@ func castRequiredGas(environment EVMEnvironment, input []byte) uint64 {
 	return environment.FhevmParams().GasCosts.FheCast
 }
 
-func decryptRequiredGas(environment EVMEnvironment, input []byte) uint64 {
+func decryptRequiredGas(environment EVMEnvironment, suppliedGas uint64, input []byte) uint64 {
 	input = input[:minInt(32, len(input))]
 
 	logger := environment.GetLogger()
@@ -81,11 +81,11 @@ func decryptRequiredGas(environment EVMEnvironment, input []byte) uint64 {
 	return environment.FhevmParams().GasCosts.FheDecrypt[ct.fheUintType()]
 }
 
-func fhePubKeyRequiredGas(environment EVMEnvironment, input []byte) uint64 {
+func fhePubKeyRequiredGas(environment EVMEnvironment, suppliedGas uint64, input []byte) uint64 {
 	return environment.FhevmParams().GasCosts.FhePubKey
 }
 
-func trivialEncryptRequiredGas(environment EVMEnvironment, input []byte) uint64 {
+func trivialEncryptRequiredGas(environment EVMEnvironment, suppliedGas uint64, input []byte) uint64 {
 	input = input[:minInt(33, len(input))]
 
 	logger := environment.GetLogger()

@@ -1,6 +1,6 @@
 package fhevm
 
-func teeCastRequiredGas(environment EVMEnvironment, input []byte) uint64 {
+func teeCastRequiredGas(environment EVMEnvironment, suppliedGas uint64, input []byte) uint64 {
 	input = input[:minInt(33, len(input))]
 
 	if len(input) != 33 {

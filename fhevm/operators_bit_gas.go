@@ -6,7 +6,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 )
 
-func fheShlRequiredGas(environment EVMEnvironment, input []byte) uint64 {
+func fheShlRequiredGas(environment EVMEnvironment, suppliedGas uint64, input []byte) uint64 {
 	input = input[:minInt(65, len(input))]
 
 	logger := environment.GetLogger()
@@ -37,22 +37,22 @@ func fheShlRequiredGas(environment EVMEnvironment, input []byte) uint64 {
 	}
 }
 
-func fheShrRequiredGas(environment EVMEnvironment, input []byte) uint64 {
+func fheShrRequiredGas(environment EVMEnvironment, suppliedGas uint64, input []byte) uint64 {
 	// Implement in terms of shl, because comparison costs are currently the same.
-	return fheShlRequiredGas(environment, input)
+	return fheShlRequiredGas(environment, suppliedGas, input)
 }
 
-func fheRotrRequiredGas(environment EVMEnvironment, input []byte) uint64 {
+func fheRotrRequiredGas(environment EVMEnvironment, suppliedGas uint64, input []byte) uint64 {
 	// Implement in terms of shl, because comparison costs are currently the same.
-	return fheShlRequiredGas(environment, input)
+	return fheShlRequiredGas(environment, suppliedGas, input)
 }
 
-func fheRotlRequiredGas(environment EVMEnvironment, input []byte) uint64 {
+func fheRotlRequiredGas(environment EVMEnvironment, suppliedGas uint64, input []byte) uint64 {
 	// Implement in terms of shl, because comparison costs are currently the same.
-	return fheShlRequiredGas(environment, input)
+	return fheShlRequiredGas(environment, suppliedGas, input)
 }
 
-func fheNegRequiredGas(environment EVMEnvironment, input []byte) uint64 {
+func fheNegRequiredGas(environment EVMEnvironment, suppliedGas uint64, input []byte) uint64 {
 	input = input[:minInt(32, len(input))]
 
 	logger := environment.GetLogger()
@@ -68,7 +68,7 @@ func fheNegRequiredGas(environment EVMEnvironment, input []byte) uint64 {
 	return environment.FhevmParams().GasCosts.FheNeg[ct.fheUintType()]
 }
 
-func fheNotRequiredGas(environment EVMEnvironment, input []byte) uint64 {
+func fheNotRequiredGas(environment EVMEnvironment, suppliedGas uint64, input []byte) uint64 {
 	input = input[:minInt(32, len(input))]
 
 	logger := environment.GetLogger()
@@ -84,7 +84,7 @@ func fheNotRequiredGas(environment EVMEnvironment, input []byte) uint64 {
 	return environment.FhevmParams().GasCosts.FheNot[ct.fheUintType()]
 }
 
-func fheBitAndRequiredGas(environment EVMEnvironment, input []byte) uint64 {
+func fheBitAndRequiredGas(environment EVMEnvironment, suppliedGas uint64, input []byte) uint64 {
 	input = input[:minInt(65, len(input))]
 
 	logger := environment.GetLogger()
@@ -113,12 +113,12 @@ func fheBitAndRequiredGas(environment EVMEnvironment, input []byte) uint64 {
 	return environment.FhevmParams().GasCosts.FheBitwiseOp[lhs.fheUintType()]
 }
 
-func fheBitOrRequiredGas(environment EVMEnvironment, input []byte) uint64 {
+func fheBitOrRequiredGas(environment EVMEnvironment, suppliedGas uint64, input []byte) uint64 {
 	// Implement in terms of bitAnd, because bitwise op costs are currently the same.
-	return fheBitAndRequiredGas(environment, input)
+	return fheBitAndRequiredGas(environment, suppliedGas, input)
 }
 
-func fheBitXorRequiredGas(environment EVMEnvironment, input []byte) uint64 {
+func fheBitXorRequiredGas(environment EVMEnvironment, suppliedGas uint64, input []byte) uint64 {
 	// Implement in terms of bitAnd, because bitwise op costs are currently the same.
-	return fheBitAndRequiredGas(environment, input)
+	return fheBitAndRequiredGas(environment, suppliedGas, input)
 }
