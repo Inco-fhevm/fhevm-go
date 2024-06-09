@@ -249,7 +249,16 @@ func doNegNotOp(
 	// result back to the FheUintType.
 	c := big.NewInt(0).SetBytes(cp.Value).Uint64()
 
-	result := operator(c)
+	var result uint64
+	if cp.FheUintType == tfhe.FheBool {
+		if c == 0 {
+			result = 1
+		} else {
+			result = 0
+		}
+	} else {
+		result = operator(c)
+	}
 
 	var resultBz []byte
 	resultBz, err = marshalTfheType(result, cp.FheUintType)

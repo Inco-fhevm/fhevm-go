@@ -212,6 +212,8 @@ func TestTeeNotRun(t *testing.T) {
 		{tfhe.FheUint16, 4283, 61252},
 		{tfhe.FheUint32, 1333337, 4293633958},
 		{tfhe.FheUint64, 13333377777777777, 18433410695931773838},
+		{tfhe.FheBool, 1, 0},
+		{tfhe.FheBool, 0, 1},
 	}
 	for _, tc := range testcases {
 		t.Run(fmt.Sprintf("teeNot with %s", tc.typ), func(t *testing.T) {
