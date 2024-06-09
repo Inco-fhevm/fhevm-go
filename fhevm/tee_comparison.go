@@ -111,7 +111,7 @@ func teeSelectRun(environment EVMEnvironment, caller common.Address, addr common
 	var result big.Int
 	s := big.NewInt(0).SetBytes(p2.Value)
 	t := big.NewInt(0).SetBytes(p3.Value)
-	if p1.Value[0] == 1 {
+	if p1.Value[len(p1.Value)-1] == 1 {
 		result.Set(s)
 	} else {
 		result.Set(t)

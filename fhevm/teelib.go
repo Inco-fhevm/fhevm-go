@@ -104,7 +104,7 @@ var teelibMethods = []*FheLibMethod{
 	{
 		name:                "teeSelect",
 		argTypes:            "(uint256,uint256,uint256)",
-		requiredGasFunction: teeComparisonRequiredGas,
+		requiredGasFunction: teeSelectRequiredGas,
 		runFunction:         teeSelectRun,
 	},
 	{
